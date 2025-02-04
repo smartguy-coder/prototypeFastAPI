@@ -1,18 +1,8 @@
-
-
-
 from fastapi import FastAPI
 
-app = FastAPI()
+app = FastAPI(debug=True)
 
-@app.get('/')
+
+@app.get("/")
 def index():
-    return {'status': 'OK'}
-
-
-
-
-
-
-
-# must be many rows at the moment
+    return {"status": "OK"}

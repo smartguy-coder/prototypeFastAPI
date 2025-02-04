@@ -5,7 +5,8 @@
   <summary>Зміст</summary>
 
 - [1-add-makefile-for-automation](#1-add-makefile-for-automation-and-env-setup)
-- [# 2-setting-packages](#2-setting-packages)
+- [2-setting-packages](#2-setting-packages)
+- [3-install-linters-and-checkers](#3-install-linters-and-checkers)
 
 </details>
 
@@ -38,4 +39,14 @@ and minimal testing
 
 ```
 
+[UP](#prototypeFastAPI)
+
+
+# 3-install-linters-and-checkers
+```commandline
+ make install package=flake8
+ make install package=black
+ make install package=isort
+ make checks
+```
 [UP](#prototypeFastAPI)
