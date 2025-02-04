@@ -50,3 +50,21 @@ and minimal testing
  make checks
 ```
 [UP](#prototypeFastAPI)
+
+# 4-dockerization
+run from prototypeFastAPI
+```commandline
+docker build -t my-fastapi-app .
+docker run -p 9000:9000 my-fastapi-app
+```
+-t my-fastapi-app — задає ім'я образу.
+
+. — вказує поточну директорію як контекст збірки.
+
+Пояснення:
+Контекст збірки Docker: Коли ви запускаєте docker build, Docker використовує поточну директорію (або вказану директорію) як контекст збірки. Усі файли, які ви копіюєте за допомогою COPY, повинні знаходитися в цьому контексті.
+
+Шляхи у COPY: Шляхи у команді COPY відносяться до контексту збірки.
+
+
+[UP](#prototypeFastAPI)
