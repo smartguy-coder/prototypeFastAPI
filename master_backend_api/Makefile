@@ -17,3 +17,22 @@ build-unix:
 	poetry init -n
 	poetry install
 	echo "run >> source .venv\bin\activate"
+
+
+# add package for project requirements
+.PHONY: install
+install: # make install package='redis[hiredis]'
+	poetry add ${package}
+	poetry install
+
+# add package for project development
+.PHONY: install-dev
+install-dev:  # make install-dev package='pytest'
+	poetry add ${package} --group dev
+	poetry install
+
+
+.PHONY: run
+run:
+	echo 'you can switch in --log-level between debug, info, warning, error, critical'
+	uvicorn main:app --reload --host 127.0.0.1 --port 8000 --log-level info

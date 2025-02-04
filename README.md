@@ -5,6 +5,7 @@
   <summary>Зміст</summary>
 
 - [1-add-makefile-for-automation](#1-add-makefile-for-automation-and-env-setup)
+- [# 2-setting-packages](#2-setting-packages)
 
 </details>
 
@@ -25,5 +26,16 @@ Other recommended option is installing a Windows Subsystem for Linux (WSL/WSL2),
 
 [https://makefiletutorial.com/](https://makefiletutorial.com/)
 [https://python-poetry.org/docs/basic-usage/](https://python-poetry.org/docs/basic-usage/)
+
+[UP](#prototypeFastAPI)
+
+
+# 2-setting-packages
+and minimal testing
+
+```commandline
+(master-backend-api-py3.12) PS C:...\master_backend_api> make install package=fastapi[all]
+
+```
 
 [UP](#prototypeFastAPI)
