@@ -35,7 +35,7 @@ install-dev:  # make install-dev package='pytest'
 .PHONY: run
 run:
 	echo 'you can switch --log-level between debug, info, warning, error, critical'
-	uvicorn master_backend_api.main:app --reload --host 127.0.0.1 --port 9000 --log-level info
+	uvicorn main:app --reload --host 127.0.0.1 --port 9000 --log-level info
 
 .PHONY: checks
 checks:
