@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+
+  master-backend-api:
+    build:
+      dockerfile: Dockerfile
+      context: ./master_backend_api
+    container_name: master-backend-api
+    restart: on-failure
+    healthcheck:
+      test: curl -f http://localhost:9000/docs/ || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ./master_backend_api:/app
+    ports:
+      - "9000:9000"
+    command: sh -c "uvicorn main:app --port=9000 --host=0.0.0.0 --reload --no-access-log"
+    networks:
+      - main_network
+
+networks:
+  main_network:
+    driver: bridge
