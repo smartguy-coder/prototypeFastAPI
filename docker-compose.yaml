@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  documentation:
+    image: squidfunk/mkdocs-material:latest
+    container_name: mkdocs
+    hostname: mkdocs
+    command: serve --dev-addr=0.0.0.0:8010 --watch-theme
+    restart: unless-stopped
+    ports:
+      - "8010:8010"
+    volumes:
+      - ./documentation:/docs:ro
+    stdin_open: true
+    tty: true
+
+  master-backend-api:
+    build:
+      dockerfile: Dockerfile
+      context: ./master_backend_api
+    container_name: master-backend-api
+    restart: on-failure
+    healthcheck:
+      test: curl -f http://localhost:9000/docs/ || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ./master_backend_api:/app
+    ports:
+      - "9000:9000"
+    command: sh -c "uvicorn main:app --port=9000 --host=0.0.0.0 --reload --no-access-log"
+    networks:
+      - main_network
+
+  postgres_database:
+    image: postgres:16
+    container_name: postgres_database
+    restart: always
+    env_file: .env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres_user -d postgres_db || exit 1" ]  # pg_isready - is a postgres util
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    networks:
+      - main_network
+      - postgres_network
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:8.14
+    env_file: .env
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT}:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - postgres_network
+    depends_on:
+      - postgres_database
+
+volumes:
+  postgres-data:
+    external: false
+  pgadmin-data:
+
+networks:
+  main_network:
+    driver: bridge
+  postgres_network:
