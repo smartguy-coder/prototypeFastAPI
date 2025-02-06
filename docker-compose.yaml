@@ -29,8 +29,8 @@ services:
     volumes:
       - ./master_backend_api:/app
     ports:
-      - "9000:9000"
-    command: sh -c "uvicorn main:app --port=9000 --host=0.0.0.0 --reload --no-access-log"
+      - "10000:10000"
+    command: sh -c "uvicorn app.main:app --port=10000 --host=0.0.0.0 --reload --no-access-log"
     networks:
       - main_network
 
