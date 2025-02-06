@@ -22,11 +22,11 @@ COPY pyproject.toml poetry.lock /app/
 RUN poetry install --no-ansi --no-root --no-interaction
 
 
-COPY . /app
+COPY /app /app
 
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
 
-EXPOSE 9000
+EXPOSE 10000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
