@@ -23,13 +23,13 @@ build-unix:
 .PHONY: install
 install: # make install package='redis[hiredis]'
 	poetry add ${package}
-	poetry install
+	poetry install --no-root
 
 # add package for project development
 .PHONY: install-dev
 install-dev:  # make install-dev package='pytest'
 	poetry add ${package} --group dev
-	poetry install
+	poetry install --no-root
 
 
 .PHONY: run

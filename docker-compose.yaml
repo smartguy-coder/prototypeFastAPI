@@ -20,6 +20,7 @@ services:
       context: ./master_backend_api
     container_name: master-backend-api
     restart: on-failure
+    env_file: .env
     healthcheck:
       test: curl -f http://localhost:9000/docs/ || exit 1
       interval: 10s
@@ -27,12 +28,14 @@ services:
       retries: 3
       start_period: 10s
     volumes:
-      - ./master_backend_api:/app
+      - ./master_backend_api/app:/app
     ports:
       - "10000:10000"
-    command: sh -c "uvicorn app.main:app --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log"
+    command: sh -c "uvicorn main:app --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log"
     networks:
       - main_network
+    depends_on:
+      - postgres_database
 
   postgres_database:
     image: postgres:16
