@@ -68,3 +68,10 @@ docker run -p 9000:9000 my-fastapi-app
 
 
 [UP](#prototypeFastAPI)
+
+
+# alembic
+```commandline
+docker compose run --rm master-backend-api bash
+appuser@7a246ab7c518:/app$ alembic init migrations
+```
