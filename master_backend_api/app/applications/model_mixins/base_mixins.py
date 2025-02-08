@@ -19,9 +19,9 @@ class UpdatedAtMixin:
     )
 
 
-class CreateUpdateMixin(CreatedAtMixin, UpdatedAtMixin):
+class CreateUpdateAtMixin(CreatedAtMixin, UpdatedAtMixin):
     pass
 
 
 class UUIDMixin:
-    uuid_data: Mapped[uuid.UUID] = mapped_column(default=func.uuid_generate_v4)
+    uuid_data: Mapped[uuid.UUID] = mapped_column(default=uuid.uuid4)
