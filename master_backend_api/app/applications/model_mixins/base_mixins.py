@@ -1,9 +1,8 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
-from sqlalchemy.orm import mapped_column
 
 
 class PKMixin:
@@ -15,7 +14,9 @@ class CreatedAtMixin:
 
 
 class UpdatedAtMixin:
-    updated_at: Mapped[datetime] = mapped_column(default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        default=func.now(), onupdate=func.now()
+    )
 
 
 class CreateUpdateMixin(CreatedAtMixin, UpdatedAtMixin):

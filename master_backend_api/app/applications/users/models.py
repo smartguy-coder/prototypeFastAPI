@@ -1,12 +1,11 @@
-from typing import Optional
 import uuid
+from typing import Optional
 
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
-from applications.base import Base
-from applications.model_mixins.base_mixins import PKMixin, CreatedAtMixin
+from applications.base_models import Base
+from applications.model_mixins.base_mixins import CreatedAtMixin, PKMixin
 
 
 class User(PKMixin, CreatedAtMixin, Base):
@@ -22,4 +21,4 @@ class User(PKMixin, CreatedAtMixin, Base):
     notes: Mapped[Optional[str]]
 
     def __repr__(self) -> str:
-        return f'User {self.name} -> #{self.id}'
+        return f"User {self.name} -> #{self.id}"

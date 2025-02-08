@@ -1,7 +1,9 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from applications.users.router import router_users
 from settings import settings
 
 
@@ -17,7 +19,7 @@ def get_application() -> FastAPI:
         version=settings.PROJECT_VERSION,
         debug=settings.DEBUG,
         lifespan=lifespan,
-        root_path='/api',
+        root_path="/api",
         root_path_in_servers=True,
     )
 
@@ -28,6 +30,8 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    _app.include_router(router_users)
 
     return _app
 
