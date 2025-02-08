@@ -31,9 +31,14 @@ services:
       - ./master_backend_api/app:/app
     ports:
       - "10000:10000"
-    command: sh -c "uvicorn main:app --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log"
+    command: |
+      sh -c "
+          alembic upgrade head
+          uvicorn main:app --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log
+      "
     networks:
       - main_network
+      - postgres_network
     depends_on:
       - postgres_database
 
@@ -63,7 +68,7 @@ services:
 
   pgadmin:
     container_name: pgadmin_container
-    image: dpage/pgadmin4:8.14
+    image: dpage/pgadmin4:9.0
     env_file: .env
     volumes:
       - pgadmin-data:/var/lib/pgadmin

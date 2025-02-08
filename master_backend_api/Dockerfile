@@ -11,14 +11,14 @@ ENV PYTHONFAULTHANDLER=1 \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    curl gcc libpq-dev \
+    curl gcc libpq-dev make\
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip \
     && pip install  --no-cache-dir poetry  \
     && poetry config virtualenvs.create false
 
-COPY pyproject.toml poetry.lock /app/
+COPY pyproject.toml poetry.lock Makefile /app/
 RUN poetry install --no-ansi --no-root --no-interaction
 
 

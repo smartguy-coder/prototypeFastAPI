@@ -1,5 +1,5 @@
 DC = docker compose
-EXEC = docker exec -it
+RUN = ${DC} run --rm
 LOGS = docker logs
 ENV = --env-file .env
 APP_FILE = docker-compose.yaml
@@ -21,3 +21,7 @@ app-shell:
 .PHONY: app-logs
 app-logs:
 	${LOGS} ${APP_CONTAINER} -f
+
+.PHONY: app-run
+app-run-bash:
+	${RUN} ${APP_CONTAINER} bash

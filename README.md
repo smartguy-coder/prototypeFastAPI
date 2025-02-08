@@ -75,3 +75,12 @@ docker run -p 9000:9000 my-fastapi-app
 docker compose run --rm master-backend-api bash
 appuser@7a246ab7c518:/app$ alembic init migrations
 ```
+
+# tables and migrations
+- add table
+- add table to master_backend_api/app/migrations/env.py (unused import)
+- run container "make app-run-bash"
+- create migration  "alembic revision --autogenerate -m "initial"  "
+- apply migration (manual)  "alembic upgrade head"
+- rollback (manually) "alembic downgrade -1"
+- restart app (autoplaying according to execution command in docker compose file)  "docker compose restart master-backend-api"
