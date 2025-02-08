@@ -1,15 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from settings import get_settings
+from contextlib import asynccontextmanager
+
+from settings import settings
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
 
 
 def get_application() -> FastAPI:
-    settings = get_settings()
 
     _app = FastAPI(
         title=settings.PROJECT_NAME,
         version=settings.PROJECT_VERSION,
         debug=settings.DEBUG,
+        lifespan=lifespan,
+        root_path='/api',
+        root_path_in_servers=True,
     )
 
     _app.add_middleware(
@@ -28,4 +37,4 @@ app = get_application()
 
 @app.get("/")
 def index():
-    return {"status": get_settings().DATABASE_URL}
+    return {"status": settings.DATABASE_URL}
