@@ -1,22 +1,18 @@
 """initial
 
-Revision ID: 8dc3f8c0fe3a
+Revision ID: f6d67bcbebcb
 Revises:
-Create Date: 2025-02-08 13:38:31.633263
+Create Date: 2025-02-08 19:29:36.412420
 
 """
 
-import uuid
-from datetime import datetime
 from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
 
-from settings import settings
-
 # revision identifiers, used by Alembic.
-revision: str = "8dc3f8c0fe3a"
+revision: str = "f6d67bcbebcb"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,7 +27,7 @@ def upgrade() -> None:
         sa.Column("hashed_password", sa.String(), nullable=False),
         sa.Column("user_uuid", sa.Uuid(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("verified_at", sa.Boolean(), nullable=False),
+        sa.Column("is_verified", sa.Boolean(), nullable=False),
         sa.Column("is_admin", sa.Boolean(), nullable=False),
         sa.Column("notes", sa.String(), nullable=True),
         sa.Column("id", sa.Integer(), nullable=False),
@@ -41,20 +37,6 @@ def upgrade() -> None:
     op.create_index(op.f("ix_users_email"), "users", ["email"], unique=True)
     op.create_index(op.f("ix_users_name"), "users", ["name"], unique=False)
     # ### end Alembic commands ###
-    # not authomatic set of admin user - analog of Django superuser
-    op.execute(
-        """
-        INSERT INTO users (name,    email,    hashed_password,      user_uuid,  is_active, verified_at, is_admin, created_at)
-        VALUES 
-                        ('{name}', '{email}', '{hashed_password}', '{user_uuid}',    true,     true,     true,  '{created_at}')
-    """.format(
-            name=settings.DEFAULT_ADMIN_USER_NAME,
-            email=settings.DEFAULT_ADMIN_USER_EMAIL,
-            hashed_password=settings.DEFAULT_ADMIN_USER_PASSWORD,
-            user_uuid=uuid.uuid4().hex,
-            created_at=datetime.now(),
-        )
-    )
 
 
 def downgrade() -> None:

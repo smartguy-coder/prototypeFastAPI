@@ -1,4 +1,3 @@
-import asyncio
 from functools import lru_cache
 
 from pydantic import AnyHttpUrl, EmailStr
@@ -17,18 +16,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_PORT: str
     DEFAULT_ADMIN_USER_EMAIL: EmailStr
-    DEFAULT_ADMIN_USER_PASSWORD: str  # hashed in init
+    DEFAULT_ADMIN_USER_PASSWORD: str
     DEFAULT_ADMIN_USER_NAME: str
-
-    def __init__(self, **kwargs):
-        from utils.security.password_handler import PasswordEncrypt
-
-        super().__init__(**kwargs)
-
-        loop = asyncio.get_event_loop()
-        self.DEFAULT_ADMIN_USER_PASSWORD = loop.run_until_complete(
-            PasswordEncrypt.get_password_hash(self.DEFAULT_ADMIN_USER_PASSWORD)
-        )
 
     @property
     def DATABASE_URL(self) -> str:
