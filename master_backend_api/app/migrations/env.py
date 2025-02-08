@@ -3,8 +3,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from applications.base_models import Base
 from applications.users.models import User
-from applications.base import Base
 from settings import settings
 
 # this is the Alembic Config object, which provides
@@ -12,8 +12,8 @@ from settings import settings
 config = context.config
 config.set_section_option(
     config.config_ini_section,
-    'sqlalchemy.url',
-    f'{settings.DATABASE_URL}?async_fallback=True',
+    "sqlalchemy.url",
+    f"{settings.DATABASE_URL}?async_fallback=True",
 )
 
 
