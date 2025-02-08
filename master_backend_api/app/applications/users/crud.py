@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_crud import BaseCRUD
 from applications.users.models import User
+from utils.security.password_handler import PasswordEncrypt
 
 
 class UserDBManager(BaseCRUD):
@@ -15,10 +16,23 @@ class UserDBManager(BaseCRUD):
         self,
         name: str,
         email: str,
-        hashed_password: str,
+        password: str,
         session: AsyncSession,
+        is_active: bool = True,
+        is_verified: bool = False,
+        is_admin: bool = False,
+        notes: str = "",
     ) -> User:
-        user = self.model(email=email, name=name, hashed_password=hashed_password)
+        hashed_password = await PasswordEncrypt.get_password_hash(password)
+        user = self.model(
+            email=email,
+            name=name,
+            hashed_password=hashed_password,
+            notes=notes,
+            is_verified=is_verified,
+            is_admin=is_admin,
+            is_active=is_active,
+        )
         session.add(user)
         try:
             await session.commit()

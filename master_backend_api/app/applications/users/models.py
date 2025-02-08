@@ -16,7 +16,7 @@ class User(PKMixin, CreatedAtMixin, Base):
     hashed_password: Mapped[str]
     user_uuid: Mapped[uuid.UUID] = mapped_column(default=uuid.uuid4)
     is_active: Mapped[bool] = mapped_column(default=True)
-    verified_at: Mapped[bool] = mapped_column(default=False)
+    is_verified: Mapped[bool] = mapped_column(default=False)
     is_admin: Mapped[bool] = mapped_column(default=False)
     notes: Mapped[Optional[str]]
 
