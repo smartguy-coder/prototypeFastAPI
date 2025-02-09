@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 from math import ceil
 from typing import Any, Optional
 
+from fastapi import HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import asc, desc, func, or_, select
+from sqlalchemy import asc, delete, desc, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
@@ -68,3 +69,43 @@ class BaseCRUD(ABC):
             limit=params.limit,
             pages=ceil(total_count / params.limit),
         )
+
+    async def patch_item(
+        self, instance_id: int, *, session: AsyncSession, data_to_patch: BaseModel
+    ) -> Optional[Base]:
+        item = await self.get_item(
+            field=self.model.id, field_value=instance_id, session=session
+        )
+        if not item:
+            raise HTTPException(
+                detail=f"Item with id #{instance_id} was not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        data_for_updating: dict = data_to_patch.model_dump(
+            exclude={"id"}, exclude_unset=True
+        )
+        query = (
+            update(self.model)
+            .where(self.model.id == instance_id)
+            .values(**data_for_updating)
+        )
+        await session.execute(query)
+        await session.commit()
+        await session.refresh(item)
+        return item
+
+    async def delete_item(self, instance_id: int, *, session: AsyncSession) -> bool:
+        item = await self.get_item(
+            field=self.model.id, field_value=instance_id, session=session
+        )
+        if not item:
+            raise HTTPException(
+                detail=f"Item with id #{instance_id} was not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        query = delete(self.model).where(self.model.id == instance_id)
+        await session.execute(query)
+        await session.commit()
+        return True

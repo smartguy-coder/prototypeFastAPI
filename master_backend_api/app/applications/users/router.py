@@ -4,11 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
+from applications.base_schemas import StatusSuccess
 from applications.constants.messages import HelpTexts
 from applications.users.crud import UserDBManager
 from applications.users.models import User
 from applications.users.schemas import (PaginationSavedUserResponse,
-                                        RegisterUserRequest, SavedUser)
+                                        PatchDetailedUser, RegisterUserRequest,
+                                        SavedUser)
 from dependencies.database import get_async_session
 
 user_db_manager = UserDBManager()
@@ -40,9 +42,11 @@ async def create_user(
     return SavedUser.from_orm(saved_user)
 
 
-@router_users.get("/{user_id}")
+@router_users.get("/{id}")
 async def get_user(
-    user_id: int = Path(..., title=HelpTexts.ITEM_PATH_ID_PARAM, ge=1),
+    user_id: int = Path(
+        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+    ),
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
     user = await user_db_manager.get_item(
@@ -70,3 +74,28 @@ async def get_users(
     )
 
     return result
+
+
+@router_users.patch("/{id}")
+async def update_user(
+    user_data: PatchDetailedUser,
+    user_id: int = Path(
+        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+    ),
+    session: AsyncSession = Depends(get_async_session),
+) -> SavedUser:
+    user_updated = await user_db_manager.patch_item(
+        user_id, data_to_patch=user_data, session=session
+    )
+    return SavedUser.from_orm(user_updated)
+
+
+@router_users.delete("/{id}")
+async def delete_user(
+    user_id: int = Path(
+        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+    ),
+    session: AsyncSession = Depends(get_async_session),
+) -> StatusSuccess:
+    await user_db_manager.delete_item(user_id, session=session)
+    return StatusSuccess()

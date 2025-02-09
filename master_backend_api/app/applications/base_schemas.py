@@ -17,3 +17,7 @@ class PaginationResponse(BaseModel):
     page: int
     limit: int
     pages: int
+
+
+class StatusSuccess(BaseModel):
+    success: bool = True

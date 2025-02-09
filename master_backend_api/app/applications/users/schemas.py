@@ -25,11 +25,13 @@ class RegisterUserRequest(PasswordField, BaseFields):
     pass
 
 
-class SavedUser(BaseFields, BaseIdField, BaseCreatedAtField):
-    pass
-
+class PatchDetailedUser(BaseFields, IsActiveField):
     class Config:
         from_attributes = True
+
+
+class SavedUser(PatchDetailedUser, BaseCreatedAtField, BaseIdField):
+    pass
 
 
 class LoginResponse(BaseModel):

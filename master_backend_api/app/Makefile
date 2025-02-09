@@ -39,7 +39,7 @@ run:
 
 .PHONY: checks
 checks:
-	@echo "Start check🐿"
+	@echo "Start checks 🔍"
 	black .
 	isort .
 	flake8 .

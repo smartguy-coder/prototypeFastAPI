@@ -14,15 +14,15 @@ class UserDBManager(BaseCRUD):
         self.model = User
 
     async def create_user(
-            self,
-            name: str,
-            email: str,
-            password: str,
-            session: AsyncSession,
-            is_active: bool = True,
-            is_verified: bool = False,
-            is_admin: bool = False,
-            notes: str = "",
+        self,
+        name: str,
+        email: str,
+        password: str,
+        session: AsyncSession,
+        is_active: bool = True,
+        is_verified: bool = False,
+        is_admin: bool = False,
+        notes: str = "",
     ) -> User:
         hashed_password = await PasswordEncrypt.get_password_hash(password)
         user = self.model(
@@ -48,7 +48,9 @@ class UserDBManager(BaseCRUD):
 
     async def create_admin(self, session: AsyncSession):
         admin = await self.get_item(
-            field=User.email, field_value=settings.DEFAULT_ADMIN_USER_EMAIL, session=session
+            field=User.email,
+            field_value=settings.DEFAULT_ADMIN_USER_EMAIL,
+            session=session,
         )
         if not admin:
             await self.create_user(
