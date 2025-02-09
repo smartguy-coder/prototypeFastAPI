@@ -8,7 +8,7 @@ from sqlalchemy import asc, delete, desc, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
-from applications.base_models import Base
+from applications.base_model_and_mixins.base_models import Base
 from applications.base_queries import SearchParams, SortEnum
 from applications.base_schemas import PaginationResponse
 

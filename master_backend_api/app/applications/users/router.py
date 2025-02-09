@@ -5,17 +5,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
-from applications.constants.messages import HelpTexts
 from applications.users.crud import UserDBManager
 from applications.users.models import User
 from applications.users.schemas import (PaginationSavedUserResponse,
                                         PatchDetailedUser, RegisterUserRequest,
                                         SavedUser)
+from constants.messages import HelpTexts
 from dependencies.database import get_async_session
 
 user_db_manager = UserDBManager()
 
-router_users = APIRouter(prefix="/users", tags=["Users", "API"], dependencies=[])
+router_users = APIRouter()
 
 
 @router_users.post("/create", status_code=status.HTTP_201_CREATED)
@@ -72,7 +72,6 @@ async def get_users(
         targeted_schema=SavedUser,
         session=session,
     )
-
     return result
 
 
