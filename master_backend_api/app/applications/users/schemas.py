@@ -34,12 +34,5 @@ class SavedUser(PatchDetailedUser, BaseCreatedAtField, BaseIdField):
     pass
 
 
-class LoginResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    expires_at: int
-    token_type: str = "Bearer"
-
-
 class PaginationSavedUserResponse(PaginationResponse):
     items: list[SavedUser]

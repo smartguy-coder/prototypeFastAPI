@@ -2,7 +2,7 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from applications.base_models import async_session_maker
+from applications.base_model_and_mixins.base_models import async_session_maker
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:

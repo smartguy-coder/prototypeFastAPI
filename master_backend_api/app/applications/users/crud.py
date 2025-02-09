@@ -2,10 +2,10 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from applications.auth.password_handler import PasswordEncrypt
 from applications.base_crud import BaseCRUD
 from applications.users.models import User
 from settings import settings
-from utils.security.password_handler import PasswordEncrypt
 
 
 class UserDBManager(BaseCRUD):

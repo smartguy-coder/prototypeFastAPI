@@ -36,11 +36,14 @@ services:
           alembic upgrade head
           uvicorn main:app --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log
       "
+    # gunicorn -w 4 -b 0.0.0.0:10000 -k uvicorn.workers.UvicornWorker main:app
     networks:
       - main_network
       - postgres_network
+      - redis_network
     depends_on:
       - postgres_database
+      - redis
 
   postgres_database:
     image: postgres:16
@@ -85,12 +88,47 @@ services:
     depends_on:
       - postgres_database
 
+  redis:
+    image: redis:7.0.8-alpine
+    container_name: redis
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: [ "redis-server", "--appendonly", "no", "--maxmemory", "10mb", "--maxmemory-policy", "allkeys-lru" ]
+    healthcheck:
+      test: ['CMD', "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    links:
+      - redis-insight
+    networks:
+      - main_network
+      - redis_network
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight:/data
+    networks:
+      - redis_network
+
 volumes:
   postgres-data:
     external: false
   pgadmin-data:
+  redis-data:
+  redis-insight:
 
 networks:
   main_network:
     driver: bridge
   postgres_network:
+  redis_network:

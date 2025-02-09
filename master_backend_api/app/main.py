@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from applications.auth.router import router_auth
 from applications.users.router import router_users
 from settings import settings
 
@@ -38,7 +39,10 @@ def get_application() -> FastAPI:
         allow_headers=["*"],
     )
 
-    _app.include_router(router_users)
+    _app.include_router(router_users, prefix="/users", tags=["Users"], dependencies=[])
+    _app.include_router(
+        router_auth, prefix="/auth", tags=["Users", "Auth"], dependencies=[]
+    )
 
     return _app
 
@@ -47,5 +51,8 @@ app = get_application()
 
 
 @app.get("/")
-def index():
+async def index():
+    from services.redis import redis_service
+
+    await redis_service.set_cache("hjhjhjhjhh55555555555555551111111", 45)
     return {"status": settings.DATABASE_URL}

@@ -3,9 +3,9 @@ from typing import Optional
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from applications.base_models import Base
-from applications.model_mixins.base_mixins import (CreateUpdateAtMixin,
-                                                   PKMixin, UUIDMixin)
+from applications.base_model_and_mixins.base_mixins import (
+    CreateUpdateAtMixin, PKMixin, UUIDMixin)
+from applications.base_model_and_mixins.base_models import Base
 
 
 class User(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
