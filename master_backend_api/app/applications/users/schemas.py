@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from applications.base_schemas import BaseCreatedAtField, BaseIdField
+from applications.base_schemas import (BaseCreatedAtField, BaseIdField,
+                                       PaginationResponse)
 
 
 class BaseFields(BaseModel):
@@ -36,3 +37,7 @@ class LoginResponse(BaseModel):
     refresh_token: str
     expires_at: int
     token_type: str = "Bearer"
+
+
+class PaginationSavedUserResponse(PaginationResponse):
+    items: list[SavedUser]

@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
 
     session_gen = get_async_session()
     session = await anext(session_gen)
-    admin = await user_manager.get(
+    admin = await user_manager.get_item(
         field=User.email, field_value=settings.DEFAULT_ADMIN_USER_EMAIL, session=session
     )
     if not admin:
