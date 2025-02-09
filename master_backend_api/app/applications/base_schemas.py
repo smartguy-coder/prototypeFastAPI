@@ -9,3 +9,15 @@ class BaseIdField(BaseModel):
 
 class BaseCreatedAtField(BaseModel):
     created_at: datetime = Field(examples=[datetime.now()])
+
+
+class PaginationResponse(BaseModel):
+    items: list
+    total: int
+    page: int
+    limit: int
+    pages: int
+
+
+class StatusSuccess(BaseModel):
+    success: bool = True

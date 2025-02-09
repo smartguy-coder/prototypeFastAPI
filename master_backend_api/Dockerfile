@@ -18,7 +18,7 @@ RUN pip install --upgrade pip \
     && pip install  --no-cache-dir poetry  \
     && poetry config virtualenvs.create false
 
-COPY pyproject.toml poetry.lock Makefile /app/
+COPY pyproject.toml poetry.lock /app/
 RUN poetry install --no-ansi --no-root --no-interaction
 
 

@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_crud import BaseCRUD
 from applications.users.models import User
+from settings import settings
 from utils.security.password_handler import PasswordEncrypt
 
 
@@ -43,4 +44,21 @@ class UserDBManager(BaseCRUD):
             raise HTTPException(
                 detail=f"Error has occurred while creating User with email {email}, probably already exists",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    async def create_admin(self, session: AsyncSession):
+        admin = await self.get_item(
+            field=User.email,
+            field_value=settings.DEFAULT_ADMIN_USER_EMAIL,
+            session=session,
+        )
+        if not admin:
+            await self.create_user(
+                name=settings.DEFAULT_ADMIN_USER_NAME,
+                email=settings.DEFAULT_ADMIN_USER_EMAIL,
+                password=settings.DEFAULT_ADMIN_USER_PASSWORD,
+                is_verified=True,
+                is_admin=True,
+                notes="system created user",
+                session=session,
             )

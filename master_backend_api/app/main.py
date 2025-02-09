@@ -10,26 +10,12 @@ from settings import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from applications.users.crud import UserDBManager
-    from applications.users.models import User
     from dependencies.database import get_async_session
 
     user_manager = UserDBManager()
-
     session_gen = get_async_session()
     session = await anext(session_gen)
-    admin = await user_manager.get(
-        field=User.email, field_value=settings.DEFAULT_ADMIN_USER_EMAIL, session=session
-    )
-    if not admin:
-        await user_manager.create_user(
-            name=settings.DEFAULT_ADMIN_USER_NAME,
-            email=settings.DEFAULT_ADMIN_USER_EMAIL,
-            password=settings.DEFAULT_ADMIN_USER_PASSWORD,
-            is_verified=True,
-            is_admin=True,
-            notes="system created user",
-            session=session,
-        )
+    await user_manager.create_admin(session=session)
     yield
 
 
