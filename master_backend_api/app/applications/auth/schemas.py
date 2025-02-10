@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class LoginResponse(BaseModel):
@@ -6,3 +6,12 @@ class LoginResponse(BaseModel):
     refresh_token: str
     expires_at: int
     token_type: str = "Bearer"
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetRequest(EmailRequest):
+    token: str
+    password: str
