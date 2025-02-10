@@ -26,3 +26,13 @@ isort = "^6.0.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+exclude = '''
+/(
+    migrations
+)/
+'''
+
+[tool.isort]
+skip = ["migrations"]

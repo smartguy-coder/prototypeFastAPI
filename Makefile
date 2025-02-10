@@ -23,5 +23,9 @@ app-logs:
 	${LOGS} ${APP_CONTAINER} -f
 
 .PHONY: app-run
-app-run-bash:
+app-run:
 	${RUN} ${APP_CONTAINER} bash
+
+.PHONY: restart
+restart:
+	${DC} restart ${APP_CONTAINER}

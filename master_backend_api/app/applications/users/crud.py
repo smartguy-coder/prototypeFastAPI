@@ -62,3 +62,6 @@ class UserDBManager(BaseCRUD):
                 notes="system created user",
                 session=session,
             )
+
+
+user_manager = UserDBManager()

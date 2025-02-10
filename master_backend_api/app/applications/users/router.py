@@ -5,25 +5,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
-from applications.users.crud import UserDBManager
+from applications.users.crud import user_manager
 from applications.users.models import User
 from applications.users.schemas import (PaginationSavedUserResponse,
                                         PatchDetailedUser, RegisterUserRequest,
                                         SavedUser)
 from constants.messages import HelpTexts
+from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
-
-user_db_manager = UserDBManager()
+from dependencies.security import require_permissions
 
 router_users = APIRouter()
 
 
 @router_users.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_user(
-    new_user: RegisterUserRequest,
-    session: AsyncSession = Depends(get_async_session),
+        new_user: RegisterUserRequest,
+        session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
-    maybe_user: User | None = await user_db_manager.get_item(
+    maybe_user: User | None = await user_manager.get_item(
         field=User.email, field_value=new_user.email, session=session
     )
     if maybe_user:
@@ -32,7 +32,7 @@ async def create_user(
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
-    saved_user = await user_db_manager.create_user(
+    saved_user = await user_manager.create_user(
         name=new_user.name,
         email=new_user.email,
         password=new_user.password,
@@ -44,12 +44,12 @@ async def create_user(
 
 @router_users.get("/{id}")
 async def get_user(
-    user_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
-    session: AsyncSession = Depends(get_async_session),
+        user_id: int = Path(
+            ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+        ),
+        session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
-    user = await user_db_manager.get_item(
+    user = await user_manager.get_item(
         field=User.id, field_value=user_id, session=session
     )
     if not user:
@@ -63,10 +63,10 @@ async def get_user(
 
 @router_users.get("/")
 async def get_users(
-    params: Annotated[SearchParams, Depends()],
-    session: AsyncSession = Depends(get_async_session),
+        params: Annotated[SearchParams, Depends()],
+        session: AsyncSession = Depends(get_async_session),
 ) -> PaginationSavedUserResponse:
-    result = await user_db_manager.get_items(
+    result = await user_manager.get_items(
         params=params,
         search_fields=[User.name, User.email],
         targeted_schema=SavedUser,
@@ -77,24 +77,24 @@ async def get_users(
 
 @router_users.patch("/{id}")
 async def update_user(
-    user_data: PatchDetailedUser,
-    user_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
-    session: AsyncSession = Depends(get_async_session),
+        user_data: PatchDetailedUser,
+        user_id: int = Path(
+            ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+        ),
+        session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
-    user_updated = await user_db_manager.patch_item(
+    user_updated = await user_manager.patch_item(
         user_id, data_to_patch=user_data, session=session
     )
     return SavedUser.from_orm(user_updated)
 
 
-@router_users.delete("/{id}")
+@router_users.delete("/{id}", dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_DELETE_USER]))])
 async def delete_user(
-    user_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
-    session: AsyncSession = Depends(get_async_session),
+        user_id: int = Path(
+            ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+        ),
+        session: AsyncSession = Depends(get_async_session),
 ) -> StatusSuccess:
-    await user_db_manager.delete_item(user_id, session=session)
+    await user_manager.delete_item(user_id, session=session)
     return StatusSuccess()

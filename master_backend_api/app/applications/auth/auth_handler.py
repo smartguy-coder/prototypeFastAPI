@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.auth.password_handler import PasswordEncrypt
 from applications.auth.schemas import LoginResponse
-from applications.users.crud import UserDBManager
+from applications.users.crud import user_manager
 from applications.users.models import User
 from services.redis import redis_service
 from settings import settings
@@ -19,13 +19,12 @@ class AuthHandler:
     def __init__(self):
         self.secret = settings.JWT_SECRET
         self.algorithm = settings.JWT_ALGORITHM
-        self.user_manager = UserDBManager()
 
     async def get_login_token_pairs(
         self, data: OAuth2PasswordRequestForm, session: AsyncSession
     ) -> LoginResponse:
 
-        user: User | None = await self.user_manager.get_item(
+        user: User | None = await user_manager.get_item(
             field=User.email, field_value=data.username, session=session
         )
 
@@ -122,7 +121,7 @@ class AuthHandler:
 
         await redis_service.delete_cache(refresh_token_key)
 
-        user: User = await UserDBManager().get_item(
+        user: User = await user_manager.get_item(
             field=User.id, field_value=int(payload["sub"]), session=session
         )
         if not user:
