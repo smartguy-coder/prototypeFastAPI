@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,6 +64,22 @@ class UserDBManager(BaseCRUD):
                 notes="system created user",
                 session=session,
             )
+
+    async def activate_user_account(self, user_uuid: uuid.UUID, session: AsyncSession) -> User:
+        user = await self.get_item(field=self.model.uuid_data, field_value=user_uuid, session=session)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Data for account activation is not correct"
+            )
+        if user.is_verified:
+            return user
+
+        user.is_verified = True
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
 
 
 user_manager = UserDBManager()

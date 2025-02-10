@@ -1,3 +1,4 @@
+import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
@@ -38,8 +39,14 @@ async def create_user(
         password=new_user.password,
         session=session,
     )
-    # todo: implement email verification
+    # todo: implement email verification (host rout ready)
     return SavedUser.from_orm(saved_user)
+
+
+@router_users.get("/verify/{user_uuid}", description='verification via email expected')
+async def verify_user(user_uuid: uuid.UUID, session: AsyncSession = Depends(get_async_session)) -> StatusSuccess:
+    await user_manager.activate_user_account(user_uuid, session)
+    return StatusSuccess()
 
 
 @router_users.get("/{id}")

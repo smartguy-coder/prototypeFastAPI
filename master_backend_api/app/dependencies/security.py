@@ -35,7 +35,7 @@ async def get_admin_user(user: User | None = Depends(get_current_user)) -> User:
 
 
 def require_permissions(required_permissions: list[StrEnum]):
-    def dependency(user: User | None = Depends(get_current_user)):
+    def dependency(user: User | None = Depends(get_current_user)) -> User:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
