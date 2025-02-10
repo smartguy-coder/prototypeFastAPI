@@ -10,10 +10,9 @@ from settings import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from applications.users.crud import UserDBManager
+    from applications.users.crud import user_manager
     from dependencies.database import get_async_session
 
-    user_manager = UserDBManager()
     session_gen = get_async_session()
     session = await anext(session_gen)
     await user_manager.create_admin(session=session)
@@ -39,10 +38,8 @@ def get_application() -> FastAPI:
         allow_headers=["*"],
     )
 
-    _app.include_router(router_users, prefix="/users", tags=["Users"], dependencies=[])
-    _app.include_router(
-        router_auth, prefix="/auth", tags=["Users", "Auth"], dependencies=[]
-    )
+    _app.include_router(router_auth, prefix="/auth", tags=["Users", "Auth"])
+    _app.include_router(router_users, prefix="/users", tags=["Users"])
 
     return _app
 

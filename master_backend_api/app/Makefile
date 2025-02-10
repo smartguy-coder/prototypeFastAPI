@@ -40,6 +40,6 @@ run:
 .PHONY: checks
 checks:
 	@echo "Start checks 🔍"
-	black .
-	isort .
+	black --exclude "migrations" .
+	isort --skip migrations .
 	flake8 .
