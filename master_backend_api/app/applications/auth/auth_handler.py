@@ -10,7 +10,7 @@ from applications.auth.password_handler import PasswordEncrypt
 from applications.auth.schemas import LoginResponse
 from applications.users.crud import user_manager
 from applications.users.models import User
-from services.redis import redis_service
+from services.redis_service import redis_service
 from settings import settings
 
 

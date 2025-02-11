@@ -31,11 +31,24 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_PORT: str
 
+    RABBITMQ_HOSTNAME: str
+    RABBITMQ_CONTAINER_NAME: str
+    RABBITMQ_DEFAULT_USER: str
+    RABBITMQ_DEFAULT_PASS: str
+    RABBITMQ_AMQP_PORT: int
+
     @property
     def DATABASE_URL(self) -> str:
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
+
+    @property
+    def RABBITMQ_URL(self) -> str:
+        return (
+            f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}@"
+            f"{self.RABBITMQ_HOSTNAME}:{self.RABBITMQ_AMQP_PORT}/"
         )
 
 

@@ -41,6 +41,7 @@ services:
       - main_network
       - postgres_network
       - redis_network
+      - rabbitmq_network
     depends_on:
       - postgres_database
       - redis
@@ -120,15 +121,35 @@ services:
     networks:
       - redis_network
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: ${RABBITMQ_HOSTNAME}
+    container_name: ${RABBITMQ_CONTAINER_NAME}
+    env_file:
+      - .env
+    ports:
+      - "${RABBITMQ_AMQP_PORT}:5672"
+      - "${RABBITMQ_UI_PORT}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_DEFAULT_USER}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_DEFAULT_PASS}"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - rabbitmq_network
+      - main_network
+
 volumes:
   postgres-data:
     external: false
   pgadmin-data:
   redis-data:
   redis-insight:
+  rabbitmq-data:
 
 networks:
   main_network:
     driver: bridge
   postgres_network:
   redis_network:
+  rabbitmq_network:

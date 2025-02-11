@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from applications.auth.router import router_auth
 from applications.users.router import router_users
+from services.redis_service import redis_service
 from settings import settings
 
 
@@ -49,7 +50,6 @@ app = get_application()
 
 @app.get("/")
 async def index():
-    from services.redis import redis_service
 
     await redis_service.set_cache("hjhjhjhjhh55555555555555551111111", 45)
     return {"status": settings.DATABASE_URL}
