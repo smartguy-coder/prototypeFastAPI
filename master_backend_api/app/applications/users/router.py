@@ -1,28 +1,34 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
 from applications.users.crud import user_manager
 from applications.users.models import User
-from applications.users.schemas import (PaginationSavedUserResponse,
-                                        PatchDetailedUser, RegisterUserRequest,
-                                        SavedUser)
+from applications.users.schemas import (
+    PaginationSavedUserResponse,
+    PatchDetailedUser,
+    RegisterUserRequest,
+    SavedUser,
+    UserRegistrationMessage,
+)
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
 from dependencies.security import require_permissions
+from services.rabbitmq_service import rabbitmq_producer
 
 router_users = APIRouter()
 
 
 @router_users.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_user(
-        new_user: RegisterUserRequest,
-        session: AsyncSession = Depends(get_async_session),
+    request: Request,
+    new_user: RegisterUserRequest,
+    session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
     maybe_user: User | None = await user_manager.get_item(
         field=User.email, field_value=new_user.email, session=session
@@ -39,22 +45,33 @@ async def create_user(
         password=new_user.password,
         session=session,
     )
-    # todo: implement email verification (host rout ready)
+    await rabbitmq_producer.send_message(
+        UserRegistrationMessage(
+            lang="uk",
+            email=saved_user.email,
+            redirect_url=str(
+                request.url_for("verify_user", user_uuid=saved_user.uuid_data)
+            ),
+        ).dict(),
+        queue_name="user_registration",
+    )
     return SavedUser.from_orm(saved_user)
 
 
-@router_users.get("/verify/{user_uuid}", description='verification via email expected')
-async def verify_user(user_uuid: uuid.UUID, session: AsyncSession = Depends(get_async_session)) -> StatusSuccess:
+@router_users.get("/verify/{user_uuid}", description="verification via email expected")
+async def verify_user(
+    user_uuid: uuid.UUID, session: AsyncSession = Depends(get_async_session)
+) -> StatusSuccess:
     await user_manager.activate_user_account(user_uuid, session)
     return StatusSuccess()
 
 
 @router_users.get("/{id}")
 async def get_user(
-        user_id: int = Path(
-            ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-        ),
-        session: AsyncSession = Depends(get_async_session),
+    user_id: int = Path(
+        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+    ),
+    session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
     user = await user_manager.get_item(
         field=User.id, field_value=user_id, session=session
@@ -70,8 +87,8 @@ async def get_user(
 
 @router_users.get("/")
 async def get_users(
-        params: Annotated[SearchParams, Depends()],
-        session: AsyncSession = Depends(get_async_session),
+    params: Annotated[SearchParams, Depends()],
+    session: AsyncSession = Depends(get_async_session),
 ) -> PaginationSavedUserResponse:
     result = await user_manager.get_items(
         params=params,
@@ -84,11 +101,11 @@ async def get_users(
 
 @router_users.patch("/{id}")
 async def update_user(
-        user_data: PatchDetailedUser,
-        user_id: int = Path(
-            ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-        ),
-        session: AsyncSession = Depends(get_async_session),
+    user_data: PatchDetailedUser,
+    user_id: int = Path(
+        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+    ),
+    session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
     user_updated = await user_manager.patch_item(
         user_id, data_to_patch=user_data, session=session
@@ -96,12 +113,15 @@ async def update_user(
     return SavedUser.from_orm(user_updated)
 
 
-@router_users.delete("/{id}", dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_DELETE_USER]))])
+@router_users.delete(
+    "/{id}",
+    dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_DELETE_USER]))],
+)
 async def delete_user(
-        user_id: int = Path(
-            ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-        ),
-        session: AsyncSession = Depends(get_async_session),
+    user_id: int = Path(
+        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
+    ),
+    session: AsyncSession = Depends(get_async_session),
 ) -> StatusSuccess:
     await user_manager.delete_item(user_id, session=session)
     return StatusSuccess()

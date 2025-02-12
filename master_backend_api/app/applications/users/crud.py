@@ -65,15 +65,21 @@ class UserDBManager(BaseCRUD):
                 session=session,
             )
 
-    async def activate_user_account(self, user_uuid: uuid.UUID, session: AsyncSession) -> User:
-        user = await self.get_item(field=self.model.uuid_data, field_value=user_uuid, session=session)
+    async def activate_user_account(
+        self, user_uuid: uuid.UUID, session: AsyncSession
+    ) -> User:
+        user = await self.get_item(
+            field=self.model.uuid_data, field_value=user_uuid, session=session
+        )
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Data for account activation is not correct"
+                detail="Data for account activation is not correct",
             )
         if user.is_verified:
-            return user
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Link was used already"
+            )
 
         user.is_verified = True
         session.add(user)
