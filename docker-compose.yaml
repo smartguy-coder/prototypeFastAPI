@@ -45,6 +45,7 @@ services:
     depends_on:
       - postgres_database
       - redis
+      - rabbitmq
 
   postgres_database:
     image: postgres:16

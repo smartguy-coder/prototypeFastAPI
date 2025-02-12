@@ -1,7 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from applications.base_schemas import (BaseCreatedAtField, BaseIdField,
-                                       PaginationResponse)
+from applications.base_schemas import (
+    BaseCreatedAtField,
+    BaseIdField,
+    PaginationResponse,
+)
 
 
 class BaseFields(BaseModel):
@@ -36,3 +39,9 @@ class SavedUser(PatchDetailedUser, BaseCreatedAtField, BaseIdField):
 
 class PaginationSavedUserResponse(PaginationResponse):
     items: list[SavedUser]
+
+
+class UserRegistrationMessage(BaseModel):
+    lang: str
+    email: EmailStr
+    redirect_url: str
