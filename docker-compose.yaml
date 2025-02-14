@@ -22,7 +22,7 @@ services:
     restart: on-failure
     env_file: .env
     healthcheck:
-      test: curl -f http://localhost:9000/docs/ || exit 1
+      test: curl -f http://localhost:10000/docs/ || exit 1
       interval: 10s
       timeout: 10s
       retries: 3
@@ -45,6 +45,33 @@ services:
     depends_on:
       - postgres_database
       - redis
+      - rabbitmq
+
+  notification_service:
+    build:
+      dockerfile: Dockerfile
+      context: ./notification_service
+    container_name: notification_service
+    restart: on-failure
+    env_file: .env
+    healthcheck:
+      test: curl -f http://localhost:15000/docs/ || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ./notification_service/app:/app
+    ports:
+      - "15000:15000"
+    command: |
+      sh -c "
+          uvicorn main:app --port=15000 --host=0.0.0.0 --workers 1 --reload --no-access-log
+      "
+    # gunicorn -w 4 -b 0.0.0.0:15000 -k uvicorn.workers.UvicornWorker main:app
+    networks:
+      - rabbitmq_network
+    depends_on:
       - rabbitmq
 
   postgres_database:
