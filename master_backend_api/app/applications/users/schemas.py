@@ -1,10 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from applications.base_schemas import (
-    BaseCreatedAtField,
-    BaseIdField,
-    PaginationResponse,
-)
+from applications.base_schemas import (BaseCreatedAtField, BaseIdField,
+                                       PaginationResponse)
 
 
 class BaseFields(BaseModel):

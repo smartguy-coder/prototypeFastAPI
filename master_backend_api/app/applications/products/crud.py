@@ -1,8 +1,9 @@
-from applications.products.models import Category
-from applications.base_crud import BaseCRUD
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import status, HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from applications.base_crud import BaseCRUD
+from applications.products.models import Category
 
 
 class CategoryDBManager(BaseCRUD):

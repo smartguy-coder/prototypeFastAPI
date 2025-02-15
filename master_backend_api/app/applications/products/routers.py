@@ -1,34 +1,19 @@
-from applications.products.crud import category_manager
-from applications.products.models import Category
-from applications.products.shemas import (
-    NewCategory,
-    SavedCategory,
-    PaginationSavedCategoriesResponse,
-)
-from applications.users.crud import user_manager
-from applications.users.models import User
-from fastapi import status, APIRouter
-from applications.users.schemas import (
-    PaginationSavedUserResponse,
-    PatchDetailedUser,
-    RegisterUserRequest,
-    SavedUser,
-    UserRegistrationMessage,
-)
-from constants.messages import HelpTexts
-from constants.permissions import UserPermissionsEnum
-from dependencies.database import get_async_session
-from dependencies.security import require_permissions
-from services.rabbit.constants import SupportedQueues
-from services.rabbit.rabbitmq_service import rabbitmq_producer
-import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
+from applications.products.crud import category_manager
+from applications.products.models import Category
+from applications.products.shemas import (NewCategory,
+                                          PaginationSavedCategoriesResponse,
+                                          SavedCategory)
+from constants.messages import HelpTexts
+from constants.permissions import UserPermissionsEnum
+from dependencies.database import get_async_session
+from dependencies.security import require_permissions
 
 router_categories = APIRouter()
 

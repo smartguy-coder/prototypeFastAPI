@@ -1,5 +1,6 @@
-import aio_pika
 import json
+
+import aio_pika
 
 from settings import settings
 

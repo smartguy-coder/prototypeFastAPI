@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.auth.auth_handler import auth_handler
-from applications.auth.schemas import LoginResponse, EmailRequest, ResetRequest
+from applications.auth.schemas import EmailRequest, LoginResponse, ResetRequest
 from applications.users.crud import user_manager
 from applications.users.models import User
 from dependencies.database import get_async_session
