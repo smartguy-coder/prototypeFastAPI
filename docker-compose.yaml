@@ -67,6 +67,7 @@ services:
       "
     networks:
       - rabbitmq_network
+      - main_network
     depends_on:
       rabbitmq:
         condition: service_healthy

@@ -4,6 +4,11 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+
+    SMTP_TOKEN: str
+    SMTP_USER: str
+    SMTP_SERVER: str
+
     RABBITMQ_HOSTNAME: str
     RABBITMQ_CONTAINER_NAME: str
     RABBITMQ_DEFAULT_USER: str

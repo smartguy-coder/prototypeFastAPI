@@ -48,8 +48,10 @@ async def create_user(
     )
     await rabbitmq_producer.send_message(
         UserRegistrationMessage(
+            user_name=saved_user.name,
             lang="uk",
             email=saved_user.email,
+            base_url=str(request.base_url),
             redirect_url=str(
                 request.url_for("verify_user", user_uuid=saved_user.uuid_data)
             ),
