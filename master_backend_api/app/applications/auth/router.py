@@ -84,7 +84,7 @@ async def reset_password(
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Your account has been dactivated. Please contact support.",
+            detail="Your account has been deactivated. Please contact support.",
         )
     saved_token = await redis_service.get_cache(f"user:{user.id}:forgot_password_token")
     if saved_token != data.token:
