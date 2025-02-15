@@ -42,6 +42,8 @@ class PaginationSavedUserResponse(PaginationResponse):
 
 
 class UserRegistrationMessage(BaseModel):
+    user_name: str
     lang: str
     email: EmailStr
     redirect_url: str
+    base_url: str

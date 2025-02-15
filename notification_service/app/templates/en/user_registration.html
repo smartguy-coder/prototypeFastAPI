@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Підтвердьте ваш запит</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .email-container {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: auto;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #d4af37;
+            color: black;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <h2>Dear {{ user_name }},</h2>
+            <p>We received a request to register on the website <strong><a href="{{ base_url }}">SuperShop</a></strong>.</p>
+            <p><strong>Click the button below within 48 hours to confirm this request.</strong></p>
+        <a href="{{ redirect_url }}" class="btn">Verify Request</a>
+    </div>
+</body>
+</html>
