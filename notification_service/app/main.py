@@ -4,7 +4,6 @@ from consumer import consume_messages
 
 def main():
     with get_connection() as connection:
-        print("*" * 80)
         with connection.channel() as channel:
             consume_messages(channel=channel)
 

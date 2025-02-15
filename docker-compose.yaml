@@ -49,6 +49,8 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_healthy
+      notification_service:
+        condition: service_started
 
   notification_service:
     build:

@@ -19,7 +19,8 @@ from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
 from dependencies.security import require_permissions
-from services.rabbitmq_service import rabbitmq_producer
+from services.rabbit.constants import SupportedQueues
+from services.rabbit.rabbitmq_service import rabbitmq_producer
 
 router_users = APIRouter()
 
@@ -53,7 +54,7 @@ async def create_user(
                 request.url_for("verify_user", user_uuid=saved_user.uuid_data)
             ),
         ).dict(),
-        queue_name="notification",
+        queue_name=SupportedQueues.USER_REGISTRATION,
     )
     return SavedUser.from_orm(saved_user)
 
