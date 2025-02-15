@@ -10,7 +10,7 @@ from applications.base_model_and_mixins.base_mixins import (
 from applications.base_model_and_mixins.base_models import Base
 
 
-class Category(PKMixin, Base):
+class Category(PKMixin, CreateUpdateAtMixin, Base):
     __tablename__ = "categories"
 
     name: Mapped[str] = mapped_column(
@@ -21,6 +21,9 @@ class Category(PKMixin, Base):
 
     products = relationship("Product", back_populates="category")
 
+    def __str__(self):
+        return f"Category {self.name} - #{self.id}"
+
 
 class Product(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
     __tablename__ = "products"
@@ -30,7 +33,7 @@ class Product(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
     images: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
     main_image: Mapped[str] = mapped_column(nullable=False)
     category_id: Mapped[int] = mapped_column(
-        ForeignKey("categories.id"), nullable=False
+        ForeignKey("categories.id", ondelete="RESTRICT"), nullable=False
     )
 
     category = relationship("Category", back_populates="products")
