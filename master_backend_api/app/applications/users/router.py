@@ -53,7 +53,7 @@ async def create_user(
                 request.url_for("verify_user", user_uuid=saved_user.uuid_data)
             ),
         ).dict(),
-        queue_name="user_registration",
+        queue_name="notification",
     )
     return SavedUser.from_orm(saved_user)
 
