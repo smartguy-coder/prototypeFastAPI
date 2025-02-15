@@ -27,6 +27,4 @@ COPY /app /app
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
 
-EXPOSE 15000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "15000"]
+CMD ["python", "main.py"]

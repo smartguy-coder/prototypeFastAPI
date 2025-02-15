@@ -43,9 +43,14 @@ services:
       - redis_network
       - rabbitmq_network
     depends_on:
-      - postgres_database
-      - redis
-      - rabbitmq
+      postgres_database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      notification_service:
+        condition: service_started
 
   notification_service:
     build:
@@ -54,25 +59,17 @@ services:
     container_name: notification_service
     restart: on-failure
     env_file: .env
-    healthcheck:
-      test: curl -f http://localhost:15000/docs/ || exit 1
-      interval: 10s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     volumes:
       - ./notification_service/app:/app
-    ports:
-      - "15000:15000"
     command: |
       sh -c "
-          uvicorn main:app --port=15000 --host=0.0.0.0 --workers 1 --reload --no-access-log
+        python /app/main.py
       "
-    # gunicorn -w 4 -b 0.0.0.0:15000 -k uvicorn.workers.UvicornWorker main:app
     networks:
       - rabbitmq_network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   postgres_database:
     image: postgres:16
@@ -115,7 +112,8 @@ services:
     networks:
       - postgres_network
     depends_on:
-      - postgres_database
+      postgres_database:
+        condition: service_healthy
 
   redis:
     image: redis:7.0.8-alpine
@@ -132,8 +130,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    links:
-      - redis-insight
     networks:
       - main_network
       - redis_network
@@ -148,6 +144,9 @@ services:
       - redis-insight:/data
     networks:
       - redis_network
+    depends_on:
+      redis:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -166,6 +165,11 @@ services:
     networks:
       - rabbitmq_network
       - main_network
+    healthcheck:
+      test: rabbitmq-diagnostics -q check_running
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
 volumes:
   postgres-data:
