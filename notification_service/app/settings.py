@@ -15,8 +15,6 @@ class Settings(BaseSettings):
     RABBITMQ_DEFAULT_PASS: str
     RABBITMQ_AMQP_PORT: int
 
-    QUEUES: list = ["notification", "sms_channel"]
-
     @property
     def RABBITMQ_URL(self) -> str:
         return (
