@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from applications.auth.router import router_auth
-from applications.products.routers import router_categories
+from applications.products.routers import router_categories, router_products
 from applications.users.router import router_users
 from services.redis_service import redis_service
 from settings import settings
@@ -42,6 +42,7 @@ def get_application() -> FastAPI:
 
     _app.include_router(router_auth, prefix="/auth", tags=["Users", "Auth"])
     _app.include_router(router_users, prefix="/users", tags=["Users"])
+    _app.include_router(router_products, prefix="/products", tags=["Products"])
     _app.include_router(
         router_categories, prefix="/categories", tags=["Products", "Categories"]
     )
