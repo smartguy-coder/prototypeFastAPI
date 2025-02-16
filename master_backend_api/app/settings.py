@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_CACHE_PREFIX: str = "fastapi-cache"
 
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
+    S3_DEFAULT_BUCKET_NAME: str
+    S3_PORT: int
+    S3_ENDPOINT: str
+
     DEFAULT_ADMIN_USER_EMAIL: EmailStr
     DEFAULT_ADMIN_USER_PASSWORD: str
     DEFAULT_ADMIN_USER_NAME: str
@@ -50,6 +56,10 @@ class Settings(BaseSettings):
             f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}@"
             f"{self.RABBITMQ_HOSTNAME}:{self.RABBITMQ_AMQP_PORT}/"
         )
+
+    @property
+    def S3_URL(self) -> str:
+        return f"{self.S3_ENDPOINT}:{self.S3_PORT}"
 
 
 @lru_cache()

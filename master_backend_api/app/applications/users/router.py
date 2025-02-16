@@ -1,20 +1,16 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
 from applications.users.crud import user_manager
 from applications.users.models import User
-from applications.users.schemas import (
-    PaginationSavedUserResponse,
-    PatchDetailedUser,
-    RegisterUserRequest,
-    SavedUser,
-    UserRegistrationMessage,
-)
+from applications.users.schemas import (PaginationSavedUserResponse,
+                                        PatchDetailedUser, RegisterUserRequest,
+                                        SavedUser, UserRegistrationMessage)
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session

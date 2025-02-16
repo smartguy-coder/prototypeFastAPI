@@ -1,12 +1,9 @@
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from applications.base_model_and_mixins.base_mixins import (
-    CreateUpdateAtMixin,
-    PKMixin,
-    UUIDMixin,
-)
+    CreateUpdateAtMixin, PKMixin, UUIDMixin)
 from applications.base_model_and_mixins.base_models import Base
 
 

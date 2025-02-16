@@ -20,6 +20,22 @@ class BaseCRUD(ABC):
     def __init__(self):
         raise NotImplementedError("override in child classes")
 
+    async def create_instance(self, session: AsyncSession, **kwargs) -> Optional[Base]:
+        """used for creating most common instances, no additional checking or logic"""
+
+        instance = self.model(**kwargs)
+        session.add(instance)
+        try:
+            await session.commit()
+            await session.refresh(instance)
+            return instance
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(
+                detail=f"Error has occurred while creating {self.model} with{kwargs=}, {e=}",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
     async def get_item(
         self,
         *,

@@ -15,8 +15,8 @@ class SecurityHandler:
 
 
 async def get_current_user(
-        token: str = Depends(SecurityHandler.oauth2_scheme),
-        session: AsyncSession = Depends(get_async_session),
+    token: str = Depends(SecurityHandler.oauth2_scheme),
+    session: AsyncSession = Depends(get_async_session),
 ) -> User | None:
     payload = await AuthHandler().decode_token(token)
 
@@ -39,7 +39,7 @@ def require_permissions(required_permissions: list[StrEnum]):
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not authenticated"
+                detail="User not authenticated",
             )
 
         user_permissions = set(user.permissions)
@@ -50,7 +50,7 @@ def require_permissions(required_permissions: list[StrEnum]):
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Permission(s) {', '.join(required_permissions_set)} required"
+            detail=f"Permission(s) {', '.join(required_permissions_set)} required",
         )
 
     return dependency
