@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from applications.admin.admin_handler import add_sqladmin_interface
 from applications.auth.router import router_auth
 from applications.products.routers import router_categories, router_products
 from applications.users.router import router_users
@@ -47,6 +48,7 @@ def get_application() -> FastAPI:
         router_categories, prefix="/categories", tags=["Products", "Categories"]
     )
 
+    add_sqladmin_interface(_app)
     return _app
 
 

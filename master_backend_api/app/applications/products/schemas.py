@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
-from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse
+from applications.base_schemas import (BaseCreatedAtField, BaseIdField,
+                                       PaginationResponse)
 from utils.camel_case import to_camel
 
 
