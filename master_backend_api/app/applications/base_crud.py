@@ -60,9 +60,7 @@ class BaseCRUD(ABC):
         count_query = select(func.count()).select_from(self.model)
 
         if params.q and search_fields:
-            search_filter_condition = [
-                search_field.icontains(params.q) for search_field in search_fields
-            ]
+            search_filter_condition = [search_field.icontains(params.q) for search_field in search_fields]
             query = query.filter(or_(*search_filter_condition))
             count_query = count_query.filter(or_(*search_filter_condition))
 
@@ -87,34 +85,27 @@ class BaseCRUD(ABC):
         )
 
     async def patch_item(
-        self, instance_id: int, *, session: AsyncSession, data_to_patch: BaseModel
+        self, instance_id: int, *, session: AsyncSession, data_to_patch: BaseModel, exclude_unset: bool = True
     ) -> Optional[Base]:
-        item = await self.get_item(
-            field=self.model.id, field_value=instance_id, session=session
-        )
+        """
+        exclude_unset is used to show if None or default_factory must be excluded
+        """
+        item = await self.get_item(field=self.model.id, field_value=instance_id, session=session)
         if not item:
             raise HTTPException(
                 detail=f"Item with id #{instance_id} was not found",
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 
-        data_for_updating: dict = data_to_patch.model_dump(
-            exclude={"id"}, exclude_unset=True
-        )
-        query = (
-            update(self.model)
-            .where(self.model.id == instance_id)
-            .values(**data_for_updating)
-        )
+        data_for_updating: dict = data_to_patch.model_dump(exclude={"id"}, exclude_unset=exclude_unset)
+        query = update(self.model).where(self.model.id == instance_id).values(**data_for_updating)
         await session.execute(query)
         await session.commit()
         await session.refresh(item)
         return item
 
     async def delete_item(self, instance_id: int, *, session: AsyncSession) -> bool:
-        item = await self.get_item(
-            field=self.model.id, field_value=instance_id, session=session
-        )
+        item = await self.get_item(field=self.model.id, field_value=instance_id, session=session)
         if not item:
             raise HTTPException(
                 detail=f"Item with id #{instance_id} was not found",

@@ -20,18 +20,20 @@ async def get_current_user(
 ) -> User | None:
     payload = await AuthHandler().decode_token(token)
 
-    user = await user_manager.get_item(
-        field=User.email, field_value=payload.get("email"), session=session
-    )
+    user = await user_manager.get_item(field=User.email, field_value=payload.get("email"), session=session)
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+    if user.use_token_since > payload["iat"]:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User forced logout")
     return user
 
 
 async def get_admin_user(user: User | None = Depends(get_current_user)) -> User:
     if user and user.is_admin:
         return user
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin user required"
-    )
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin user required")
 
 
 def require_permissions(required_permissions: list[StrEnum]):
