@@ -14,10 +14,18 @@ class EmailRequest(BaseModel):
     email: EmailStr
 
 
-class ResetRequest(EmailRequest):
-    token: str
+class ResetRequest(BaseModel):
     password: str
 
 
 class ForceLogout(BaseModel):
     use_token_since: datetime = Field(default_factory=datetime.now)
+
+
+class UserRecoveryPassword(BaseModel):
+    user_name: str
+    lang: str
+    email: EmailStr
+    base_url: str
+    redirect_url: str
+    token: str

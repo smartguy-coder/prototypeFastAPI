@@ -21,7 +21,7 @@ def process_new_user_registration(
     log.info("method: %s", method)
     log.info("properties: %s", properties)
     log.info("body: %s", body)
-    # try-exept
+
     body_dict = json.loads(body.decode("utf-8"))
     if not (email := body_dict.get("email")):
         log.error(f"No email provided, {body_dict=}")
@@ -30,6 +30,34 @@ def process_new_user_registration(
     body = create_body_letter(
         lang=body_dict.get("lang", "uk"),
         template_name="user_registration",
+        params=body_dict,
+    )
+    send_email([email], mail_body=body, mail_subject="user_register")
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+def process_user_recovery_password(
+    ch: "BlockingChannel",
+    method: "Basic.Deliver",
+    properties: "BasicProperties",
+    body: bytes,
+):
+    log.info("ch: %s", ch)
+    log.info("method: %s", method)
+    log.info("properties: %s", properties)
+    log.info("body: %s", body)
+
+    body_dict = json.loads(body.decode("utf-8"))
+    if not (email := body_dict.get("email")):
+        log.error(f"No email provided, {body_dict=}")
+        return
+
+    if not (token := body_dict.get("token")):
+        log.error(f"No token provided, {body_dict=}")
+        return
+    body = create_body_letter(
+        lang=body_dict.get("lang", "uk"),
+        template_name="user_recovery_password",
         params=body_dict,
     )
     send_email([email], mail_body=body, mail_subject="user_register")
