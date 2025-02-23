@@ -9,6 +9,14 @@ from applications.products.routers import router_categories, router_products
 from applications.users.router import router_users
 from services.redis_service import redis_service
 from settings import settings
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn=settings.SENTRY_DNS,
+    send_default_pii=True,
+    traces_sample_rate=1.0,
+    _experiments={"continuous_profiling_auto_start": True},
+)
 
 
 @asynccontextmanager
@@ -44,9 +52,7 @@ def get_application() -> FastAPI:
     _app.include_router(router_auth, prefix="/auth", tags=["Users", "Auth"])
     _app.include_router(router_users, prefix="/users", tags=["Users"])
     _app.include_router(router_products, prefix="/products", tags=["Products"])
-    _app.include_router(
-        router_categories, prefix="/categories", tags=["Products", "Categories"]
-    )
+    _app.include_router(router_categories, prefix="/categories", tags=["Products", "Categories"])
 
     add_sqladmin_interface(_app)
     return _app

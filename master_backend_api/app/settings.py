@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = []
     DEBUG: bool = False
 
+    SENTRY_DNS: str
+
     JWT_SECRET: str
     JWT_ALGORITHM: str
     REFRESH_TOKEN_TIME_MINUTES: int = 60 * 24  # one day
