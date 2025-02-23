@@ -21,6 +21,7 @@ aio-pika = "^9.5.4"
 boto3 = "^1.36.21"
 pyhumps = "^3.8.0"
 sqladmin = {extras = ["full"], version = "^0.20.1"}
+fastapi-limiter = "^0.1.6"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"

@@ -13,7 +13,7 @@ from dependencies.database import get_async_session
 from dependencies.security import get_current_user
 from services.redis_service import redis_service
 
-router_auth = APIRouter()
+router_auth = APIRouter(prefix="/v1")
 
 
 @router_auth.post("/login")
