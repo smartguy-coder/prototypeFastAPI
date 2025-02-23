@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.auth.auth_handler import auth_handler
 from applications.auth.schemas import EmailRequest, LoginResponse, ResetRequest, ForceLogout
+from applications.base_schemas import StatusSuccess
 from applications.users.crud import user_manager
 from applications.users.models import User
 from dependencies.database import get_async_session
@@ -33,11 +34,12 @@ async def refresh_user_token(
 
 
 @router_auth.post("/force-logout", description="force logout from all devices")
-async def force_logouts(user: User = Depends(get_current_user), session: AsyncSession = Depends(get_async_session)):
-    from datetime import datetime
+async def force_logouts(
+    user: User = Depends(get_current_user), session: AsyncSession = Depends(get_async_session)
+) -> StatusSuccess:
 
     await user_manager.patch_item(user.id, data_to_patch=ForceLogout(), exclude_unset=False, session=session)
-    return {}
+    return StatusSuccess()
 
 
 @router_auth.post(
