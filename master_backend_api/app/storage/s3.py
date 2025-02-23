@@ -22,14 +22,10 @@ class S3Storage:
     ) -> str:
         file.file.seek(0)
         file_content = file.file.read()
-        self.s3_client.put_object(
-            Bucket=bucket_name, Key=object_name, Body=file_content
-        )
+        self.s3_client.put_object(Bucket=bucket_name, Key=object_name, Body=file_content)
         return f"{bucket_name}/{object_name}"
 
-    async def upload_image(
-        self, file: UploadFile, uuid_id: str, root_dir: str = "images"
-    ) -> str:
+    async def upload_image(self, file: UploadFile, uuid_id: str, root_dir: str = "productImages") -> str:
         file_name = f"{root_dir}/{uuid_id}/{file.filename}"
         url = await self.upload_file(file, file_name)
         return url

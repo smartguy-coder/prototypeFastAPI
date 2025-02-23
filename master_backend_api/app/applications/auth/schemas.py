@@ -1,4 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from datetime import datetime, timezone
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginResponse(BaseModel):
@@ -15,3 +17,7 @@ class EmailRequest(BaseModel):
 class ResetRequest(EmailRequest):
     token: str
     password: str
+
+
+class ForceLogout(BaseModel):
+    use_token_since: datetime = Field(default_factory=datetime.now)
