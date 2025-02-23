@@ -1,16 +1,18 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.auth.auth_handler import auth_handler
-from applications.auth.schemas import EmailRequest, LoginResponse, ResetRequest, ForceLogout
+from applications.auth.schemas import EmailRequest, LoginResponse, ResetRequest, ForceLogout, UserRecoveryPassword
 from applications.base_schemas import StatusSuccess
 from applications.users.crud import user_manager
 from applications.users.models import User
 from dependencies.database import get_async_session
 from dependencies.security import get_current_user
+from services.rabbit.constants import SupportedQueues
+from services.rabbit.rabbitmq_service import rabbitmq_producer
 from services.redis_service import redis_service
 
 router_auth = APIRouter()
@@ -43,10 +45,10 @@ async def force_logouts(
 
 
 @router_auth.post(
-    "/forgot-password-email",
+    "/forgot-password",
     description="Email (sms in future) password recovery, works with reset-password endpoint",
 )
-async def forgot_password_email(data: EmailRequest, session: AsyncSession = Depends(get_async_session)):
+async def forgot_password(request: Request, data: EmailRequest, session: AsyncSession = Depends(get_async_session)):
     user: User = await user_manager.get_item(field=User.email, field_value=data.email, session=session)
     if not user or not user.is_verified:
         raise HTTPException(
@@ -57,18 +59,36 @@ async def forgot_password_email(data: EmailRequest, session: AsyncSession = Depe
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Your account has been dactivated. Please contact support.",
+            detail="Your account has been deactivated. Please contact support.",
         )
 
-    # todo - save token send email - valid link 5 min - next process in reset password
-    await redis_service.set_cache(f"user:{user.id}:forgot_password_token", value=uuid.uuid4().hex, ttl=5 * 60)
+    token = uuid.uuid4().hex
+    await redis_service.set_cache(f"user:{token}:forgot_password_token", value=user.id, ttl=5 * 60)
+    await rabbitmq_producer.send_message(
+        UserRecoveryPassword(
+            user_name=user.name,
+            lang="uk",
+            email=user.email,
+            base_url=str(request.base_url),
+            redirect_url=f"{str(request.base_url)}docs#/Auth/reset_password_auth_reset_password__user_recovery_password_token__post",
+            token=token,
+        ).dict(),
+        queue_name=SupportedQueues.USER_RECOVERY_PASSWORD,
+    )
     return {"temp_password_send": data.email}
 
 
-@router_auth.put("/reset-password")
-async def reset_password(data: ResetRequest, session: AsyncSession = Depends(get_async_session)):
-    # todo - maybe not a put
-    user = await user_manager.get_item(field=User.email, field_value=data.email, session=session)
+@router_auth.post("/reset-password/{user_recovery_password_token}")
+async def reset_password(
+    user_recovery_password_token: str, data: ResetRequest, session: AsyncSession = Depends(get_async_session)
+):
+    user_id = await redis_service.get_cache(f"user:{user_recovery_password_token}:forgot_password_token")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Your token is invalid or expired",
+        )
+    user = await user_manager.get_item(field=User.id, field_value=int(user_id), session=session)
 
     if not user or not user.is_verified:
         raise HTTPException(
@@ -81,9 +101,8 @@ async def reset_password(data: ResetRequest, session: AsyncSession = Depends(get
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Your account has been deactivated. Please contact support.",
         )
-    saved_token = await redis_service.get_cache(f"user:{user.id}:forgot_password_token")
-    if saved_token != data.token:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-    # todo update hashed password
-    await redis_service.delete_cache(f"user:{user.id}:forgot_password_token")
+
+    await redis_service.delete_cache(f"user:{user_recovery_password_token}:forgot_password_token")
+
+    await user_manager.change_user_password(user_id=user.id, new_password=data.password, session=session)
     return {"password updated": True}

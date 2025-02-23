@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from applications.auth.password_handler import PasswordEncrypt
 from applications.base_crud import BaseCRUD
 from applications.users.models import User
+from applications.users.schemas import UserHashedPassword
 from settings import settings
 
 
@@ -65,27 +66,26 @@ class UserDBManager(BaseCRUD):
                 session=session,
             )
 
-    async def activate_user_account(
-        self, user_uuid: uuid.UUID, session: AsyncSession
-    ) -> User:
-        user = await self.get_item(
-            field=self.model.uuid_data, field_value=user_uuid, session=session
-        )
+    async def activate_user_account(self, user_uuid: uuid.UUID, session: AsyncSession) -> User:
+        user = await self.get_item(field=self.model.uuid_data, field_value=user_uuid, session=session)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Data for account activation is not correct",
             )
         if user.is_verified:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Link was used already"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Link was used already")
 
         user.is_verified = True
         session.add(user)
         await session.commit()
         await session.refresh(user)
         return user
+
+    async def change_user_password(self, user_id: int, new_password: str, session: AsyncSession):
+        hashed_password = await PasswordEncrypt.get_password_hash(new_password)
+        schema = UserHashedPassword(hashed_password=hashed_password)
+        await self.patch_item(instance_id=user_id, data_to_patch=schema, session=session)
 
 
 user_manager = UserDBManager()

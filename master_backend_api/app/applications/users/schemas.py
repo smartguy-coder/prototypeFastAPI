@@ -1,20 +1,15 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from applications.base_schemas import (BaseCreatedAtField, BaseIdField,
-                                       PaginationResponse)
+from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse
 
 
 class BaseFields(BaseModel):
     email: EmailStr = Field(description="User email", examples=["example@ukr.net"])
-    name: str = Field(
-        description="Name of user", examples=["John Doe"], min_length=3, max_length=50
-    )
+    name: str = Field(description="Name of user", examples=["John Doe"], min_length=3, max_length=50)
 
 
 class PasswordField(BaseModel):
-    password: str = Field(
-        description="your unique password", examples=["12345678"], min_length=8
-    )
+    password: str = Field(description="your unique password", examples=["12345678"], min_length=8)
 
 
 class IsActiveField(BaseModel):
@@ -44,3 +39,7 @@ class UserRegistrationMessage(BaseModel):
     email: EmailStr
     redirect_url: str
     base_url: str
+
+
+class UserHashedPassword(BaseModel):
+    hashed_password: str
