@@ -1,17 +1,14 @@
 import uuid
 from typing import Annotated
 
-from fastapi import (APIRouter, Body, Depends, HTTPException, Path, UploadFile,
-                     status)
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
 from applications.products.crud import category_manager, product_manager
 from applications.products.models import Category, Product
-from applications.products.schemas import (NewCategory,
-                                           PaginationSavedCategoriesResponse,
-                                           SavedCategory, SavedProduct)
+from applications.products.schemas import NewCategory, PaginationSavedCategoriesResponse, SavedCategory, SavedProduct
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
@@ -19,16 +16,14 @@ from dependencies.file_storage import validate_image, validate_images
 from dependencies.security import require_permissions
 from storage.s3 import s3_storage
 
-router_categories = APIRouter()
-router_products = APIRouter()
+router_categories = APIRouter(prefix="/v1")
+router_products = APIRouter(prefix="/v1")
 
 
 @router_categories.post(
     "/create",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[
-        Depends(require_permissions([UserPermissionsEnum.CAN_CREATE_PRODUCT_CATEGORY]))
-    ],
+    dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_CREATE_PRODUCT_CATEGORY]))],
 )
 async def create_category(
     new_category: NewCategory,
@@ -43,23 +38,17 @@ async def create_category(
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
-    saved_category = await category_manager.create_instance(
-        name=new_category.name, session=session
-    )
+    saved_category = await category_manager.create_instance(name=new_category.name, session=session)
 
     return SavedCategory.from_orm(saved_category)
 
 
 @router_categories.get("/{id}")
 async def get_user(
-    category_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
+    category_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedCategory:
-    user = await category_manager.get_item(
-        field=Category.id, field_value=category_id, session=session
-    )
+    user = await category_manager.get_item(field=Category.id, field_value=category_id, session=session)
     if not user:
         raise HTTPException(
             detail=f"Category with id #{category_id} was not found",
@@ -85,33 +74,23 @@ async def get_categories(
 
 @router_categories.patch(
     "/{id}",
-    dependencies=[
-        Depends(require_permissions([UserPermissionsEnum.CAN_CREATE_PRODUCT_CATEGORY]))
-    ],
+    dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_CREATE_PRODUCT_CATEGORY]))],
 )
 async def update_category(
     category_data: NewCategory,
-    category_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
+    category_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedCategory:
-    category_updated = await category_manager.patch_item(
-        category_id, data_to_patch=category_data, session=session
-    )
+    category_updated = await category_manager.patch_item(category_id, data_to_patch=category_data, session=session)
     return SavedCategory.from_orm(category_updated)
 
 
 @router_categories.delete(
     "/{id}",
-    dependencies=[
-        Depends(require_permissions([UserPermissionsEnum.CAN_CREATE_PRODUCT_CATEGORY]))
-    ],
+    dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_CREATE_PRODUCT_CATEGORY]))],
 )
 async def delete_category(
-    category_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
+    category_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> StatusSuccess:
     # todo check deleting with products in it
@@ -136,18 +115,14 @@ async def create_product(
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedProduct:
     # base validation part
-    category = await category_manager.get_item(
-        field=Category.id, field_value=categoryId, session=session
-    )
+    category = await category_manager.get_item(field=Category.id, field_value=categoryId, session=session)
     if not category:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Category #{categoryId} does not exist",
         )
 
-    product = await product_manager.get_item(
-        field=Product.title, field_value=title.strip(), session=session
-    )
+    product = await product_manager.get_item(field=Product.title, field_value=title.strip(), session=session)
     if product:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -156,9 +131,7 @@ async def create_product(
     # processing
     product_uuid = uuid.uuid4().hex
     try:
-        main_image_url = await s3_storage.upload_image(
-            file=main_image, uuid_id=product_uuid
-        )
+        main_image_url = await s3_storage.upload_image(file=main_image, uuid_id=product_uuid)
         images_urls = []
         for image in images:
             image_url = await s3_storage.upload_image(file=image, uuid_id=product_uuid)

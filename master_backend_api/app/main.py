@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from applications.admin.admin_handler import add_sqladmin_interface
@@ -9,6 +9,9 @@ from applications.products.routers import router_categories, router_products
 from applications.users.router import router_users
 from services.redis_service import redis_service
 from settings import settings
+import redis.asyncio as redis
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 
 
 @asynccontextmanager
@@ -19,6 +22,16 @@ async def lifespan(app: FastAPI):
     session_gen = get_async_session()
     session = await anext(session_gen)
     await user_manager.create_admin(session=session)
+
+    redis_connection = redis.Redis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        # password=settings.REDIS_PASSWORD,
+        # username=settings.RE
+        db=settings.REDIS_DATABASES,
+        decode_responses=True,
+    )
+    await FastAPILimiter.init(redis_connection)
     yield
 
 
@@ -44,9 +57,7 @@ def get_application() -> FastAPI:
     _app.include_router(router_auth, prefix="/auth", tags=["Users", "Auth"])
     _app.include_router(router_users, prefix="/users", tags=["Users"])
     _app.include_router(router_products, prefix="/products", tags=["Products"])
-    _app.include_router(
-        router_categories, prefix="/categories", tags=["Products", "Categories"]
-    )
+    _app.include_router(router_categories, prefix="/categories", tags=["Products", "Categories"])
 
     add_sqladmin_interface(_app)
     return _app
@@ -55,7 +66,7 @@ def get_application() -> FastAPI:
 app = get_application()
 
 
-@app.get("/")
+@app.get("/", dependencies=[Depends(RateLimiter(times=5, seconds=100))])
 async def index():
 
     await redis_service.set_cache("hjhjhjhjhh55555555555555551111111", 45)
