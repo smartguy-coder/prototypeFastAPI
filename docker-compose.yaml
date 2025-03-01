@@ -177,6 +177,7 @@ services:
 
   s3:
     image: bitnami/minio
+    container_name: s3
     restart: unless-stopped
     env_file:
       - .env
@@ -186,7 +187,6 @@ services:
       MINIO_DEFAULT_BUCKETS: "${S3_DEFAULT_BUCKET_NAME}:public"
     volumes:
       - s3-data:/data
-#      - ./s3-data:/data
     ports:
       - "${S3_PORT}:${S3_PORT}"
       - "9001:9001"
@@ -197,6 +197,19 @@ services:
      interval: 30s
      timeout: 20s
      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - master-backend-api
+    networks:
+      - main_network
 
 volumes:
   postgres-data:
