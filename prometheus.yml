@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 5s  # Интервал сбора метрик
+
+scrape_configs:
+  - job_name: "master-backend-api"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["master-backend-api:10000"]  # Название контейнера с FastAPI
