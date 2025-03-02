@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (localStorage.getItem("theme") === "dark") {
       body.classList.add("dark-mode");
       themeToggleBtn.classList.replace("btn-dark", "btn-light");
-      themeToggleBtn.innerHTML = "☀️ Light";
+      themeToggleBtn.innerHTML = "☀️";
   }
 
   themeToggleBtn.addEventListener("click", function () {
@@ -16,11 +16,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (body.classList.contains("dark-mode")) {
           localStorage.setItem("theme", "dark");
           themeToggleBtn.classList.replace("btn-dark", "btn-light");
-          themeToggleBtn.innerHTML = "☀️ Light";
+          themeToggleBtn.innerHTML = "☀️";
       } else {
           localStorage.setItem("theme", "light");
-          themeToggleBtn.classList.replace("btn-light", "btn-dark");
-          themeToggleBtn.innerHTML = "🌙 Dark";
+          themeToggleBtn.classList.replace("btn-light", "btn-outline-secondary");
+          themeToggleBtn.innerHTML = "🌘";
       }
   });
 });
