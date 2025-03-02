@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from settings import settings
+from roters.main_page.main_page_routers import router as main_page_router
 
 
 @asynccontextmanager
@@ -18,7 +19,6 @@ def get_application() -> FastAPI:
         version=settings.PROJECT_VERSION,
         debug=settings.DEBUG,
         lifespan=lifespan,
-        root_path="/",
         root_path_in_servers=True,
     )
 
@@ -29,6 +29,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    _app.include_router(main_page_router, tags=["Main page"])
 
     return _app
 
