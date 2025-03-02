@@ -1,0 +1,22 @@
+.dark-mode {
+    background-color: #212529 !important;
+    color: white !important;
+}
+
+.dark-mode .navbar {
+    background-color: #343a40 !important;
+}
+
+.dark-mode .navbar a {
+    color: white !important;
+}
+
+.dark-mode .btn-outline-success {
+    border-color: white !important;
+    color: white !important;
+}
+
+.dark-mode .btn-outline-success:hover {
+    background-color: white !important;
+    color: black !important;
+}
