@@ -13,6 +13,8 @@ services:
       - ./documentation:/docs:ro
     stdin_open: true
     tty: true
+    networks:
+      - main_network
 
   master-backend-api:
     build:
@@ -53,6 +55,36 @@ services:
         condition: service_started
       s3:
         condition: service_healthy
+
+  web-jinja:
+    build:
+      dockerfile: Dockerfile
+      context: ./web_jinja
+    container_name: web-jinja
+    restart: on-failure
+    env_file: .env
+    healthcheck:
+      test: curl -f http://localhost:15000/docs/ || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ./web_jinja/app:/app
+    ports:
+      - "15000:15000"
+    command: |
+      sh -c "
+          uvicorn main:app --port=15000 --host=0.0.0.0 --workers 1 --reload --no-access-log
+      "
+    # gunicorn -w 4 -b 0.0.0.0:15000 -k uvicorn.workers.UvicornWorker main:app
+    networks:
+      - main_network
+    depends_on:
+      master-backend-api:
+        condition: service_healthy
+
+
 
   notification_service:
     build:
