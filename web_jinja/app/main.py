@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from settings import settings
@@ -29,6 +30,9 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    _app.mount("/static", StaticFiles(directory="static"), name="static")
+
     _app.include_router(main_page_router, tags=["Main page"])
 
     return _app
