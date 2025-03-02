@@ -10,6 +10,9 @@ from applications.users.router import router_users
 from services.redis_service import redis_service
 from settings import settings
 import sentry_sdk
+from prometheus_fastapi_instrumentator import Instrumentator
+import logging
+
 
 sentry_sdk.init(
     dsn=settings.SENTRY_DNS,
@@ -55,6 +58,8 @@ def get_application() -> FastAPI:
     _app.include_router(router_categories, prefix="/categories", tags=["Products", "Categories"])
 
     add_sqladmin_interface(_app)
+
+    Instrumentator().instrument(_app).expose(_app)
     return _app
 
 
@@ -63,6 +68,9 @@ app = get_application()
 
 @app.get("/")
 async def index():
-
+    logging.debug("111111112222222222222")
+    logging.info("111111112222222222222")
+    logging.warning("111111112222222222222")
+    logging.error("111111112222222222222")
     await redis_service.set_cache("hjhjhjhjhh55555555555555551111111", 45)
     return {"status": settings.DATABASE_URL}

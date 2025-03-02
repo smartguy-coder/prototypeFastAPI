@@ -211,6 +211,46 @@ services:
     networks:
       - main_network
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - main_network
+
+
+  grafana:
+    # default login -> admin, password -> admin
+    #https://chatgpt.com/share/67c420f0-cc84-8004-84b2-03b78e2d6e50
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - main_network
+    depends_on:
+      - prometheus
+      - loki
+
+  loki:
+    image: grafana/loki
+    container_name: loki
+    ports:
+      - "3100:3100"
+    networks:
+      - main_network
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log  # Логи системи
+    networks:
+      - main_network
+    command: -config.file=/etc/promtail/config.yml
+
 volumes:
   postgres-data:
     external: false

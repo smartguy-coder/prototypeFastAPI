@@ -1,0 +1,27 @@
+server:
+  http_listen_port: 3100  # Порт, на якому Loki буде слухати HTTP запити
+  http_grpc_port: 9096  # Порт для gRPC
+  log_level: info  # Рівень логування для сервера Loki
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /var/loki/index  # Шлях до індексів
+    cache_location: /var/loki/cache  # Шлях до кешу
+  filesystem:
+    directory: /var/loki/chunks  # Шлях для зберігання логів
+
+limits_config:
+  max_cache_size_mb: 500  # Максимальний розмір кешу в мегабайтах
+  ingestion_rate_mb: 10  # Максимальний розмір даних, що надсилаються в Loki за секунду
+
+chunk_target_size: 1048576  # Розмір чіпів у байтах (пакетів для зберігання)
+
+schema_config:
+  configs:
+    - from: 2020-10-15  # Дата початку для схем
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 168h  # Період індексування
