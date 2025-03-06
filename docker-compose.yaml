@@ -55,6 +55,8 @@ services:
         condition: service_started
       s3:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
 
   web-jinja:
     build:
@@ -263,25 +265,42 @@ services:
       - main_network
     depends_on:
       - prometheus
-      - loki
 
-  loki:
-    image: grafana/loki
-    container_name: loki
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=changeme
+
     ports:
-      - "3100:3100"
-    networks:
-      - main_network
-    command: -config.file=/etc/loki/local-config.yaml
-
-  promtail:
-    image: grafana/promtail
+      - "9200:9200"
     volumes:
-      - ./promtail-config.yml:/etc/promtail/config.yml
-      - /var/log:/var/log  # Логи системи
+      - elastic_data:/usr/share/elasticsearch/data
     networks:
       - main_network
-    command: -config.file=/etc/promtail/config.yml
+    healthcheck:
+          test: ["CMD-SHELL", "curl -fsSL http://localhost:9200 || exit 1"]
+          interval: 30s
+          timeout: 10s
+          retries: 5
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.7.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - main_network
 
 volumes:
   postgres-data:
@@ -291,6 +310,7 @@ volumes:
   redis-insight:
   rabbitmq-data:
   s3-data:
+  elastic_data:
 
 networks:
   main_network:

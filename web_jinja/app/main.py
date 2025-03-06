@@ -39,8 +39,3 @@ def get_application() -> FastAPI:
 
 
 app = get_application()
-
-
-@app.get("/")
-async def index():
-    return "kjhjhkj"

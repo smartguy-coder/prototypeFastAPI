@@ -23,6 +23,9 @@ async def user_login(
     data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_async_session),
 ) -> LoginResponse:
+    # from utils.logs import logger
+    #
+    # logger.error("mhghjgjhgjhgj33666666666666")
     token_pair = await auth_handler.get_login_token_pairs(data, session)
     return token_pair
 
