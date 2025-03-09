@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_CACHE_PREFIX: str = "fastapi-cache"
 
+    UDS_PATH: str = "/app/tmp_uds/master-backend.sock"
+    UDS_BASE_URL: str = "http://master-backend-api"
+
 
 @lru_cache()
 def get_settings() -> Settings:
