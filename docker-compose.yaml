@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
       context: ./master_backend_api
     container_name: master-backend-api
-    restart: on-failure
+    restart: unless-stopped
     env_file: .env
     healthcheck:
       test: curl -f http://localhost:10000/docs/ || exit 1
@@ -55,13 +55,15 @@ services:
         condition: service_started
       s3:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
 
   web-jinja:
     build:
       dockerfile: Dockerfile
       context: ./web_jinja
     container_name: web-jinja
-    restart: on-failure
+    restart: unless-stopped
     env_file: .env
     healthcheck:
       test: curl -f http://localhost:15000/docs/ || exit 1
@@ -91,7 +93,7 @@ services:
       dockerfile: Dockerfile
       context: ./notification_service
     container_name: notification_service
-    restart: on-failure
+    restart: unless-stopped
     env_file: .env
     volumes:
       - ./notification_service/app:/app
@@ -243,6 +245,7 @@ services:
     networks:
       - main_network
 
+  # metrics
   prometheus:
     image: prom/prometheus
     volumes:
@@ -263,25 +266,61 @@ services:
       - main_network
     depends_on:
       - prometheus
-      - loki
 
-  loki:
-    image: grafana/loki
-    container_name: loki
+  # logs
+#
+#  logstash:
+#    image: docker.elastic.co/logstash/logstash:8.5.3
+#    container_name: logstash
+#    volumes:
+#      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#    depends_on:
+#      - elasticsearch
+#    ports:
+#      - "5000:5000"
+#      - "9600:9600"  # API Logstash для моніторингу http://127.0.0.1:9600/
+#    environment:
+#      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+#
+#    networks:
+#      - main_network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=changeme
     ports:
-      - "3100:3100"
-    networks:
-      - main_network
-    command: -config.file=/etc/loki/local-config.yaml
-
-  promtail:
-    image: grafana/promtail
+      - "9200:9200"
     volumes:
-      - ./promtail-config.yml:/etc/promtail/config.yml
-      - /var/log:/var/log  # Логи системи
+      - elastic_data:/usr/share/elasticsearch/data
     networks:
       - main_network
-    command: -config.file=/etc/promtail/config.yml
+    healthcheck:
+          test: ["CMD-SHELL", "curl -fsSL http://localhost:9200 || exit 1"]
+          interval: 30s
+          timeout: 10s
+          retries: 5
+
+  kibana:
+    # 127.0.0.1:5601
+    # management-stack management-
+    image: docker.elastic.co/kibana/kibana:8.7.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - ELASTICSEARCH_USERNAME=elastic
+#      - ELASTICSEARCH_PASSWORD=changeme
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - main_network
 
 volumes:
   postgres-data:
@@ -291,6 +330,7 @@ volumes:
   redis-insight:
   rabbitmq-data:
   s3-data:
+  elastic_data:
 
 networks:
   main_network:
