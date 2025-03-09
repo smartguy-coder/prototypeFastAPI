@@ -35,11 +35,7 @@ jobs:
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      #----------------------------------------------
-      - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+
       #----------------------------------------------
       # install linters/formatters explicitly
       #----------------------------------------------
