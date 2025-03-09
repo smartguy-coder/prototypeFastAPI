@@ -31,7 +31,9 @@ jobs:
       #----------------------------------------------
       - name: Install linters and formatters
         run: |
-          poetry init -n
+          if [ ! -f pyproject.toml ]; then
+            poetry init -n
+          fi
           poetry install
           poetry add black --dev
           poetry add isort --dev
