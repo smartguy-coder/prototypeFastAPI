@@ -31,6 +31,8 @@ jobs:
       #----------------------------------------------
       - name: Install linters and formatters
         run: |
+          poetry init -n
+          poetry install
           poetry add black --dev
           poetry add isort --dev
           poetry add flake8 --dev
