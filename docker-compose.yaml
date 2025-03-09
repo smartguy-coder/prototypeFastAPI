@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
       context: ./master_backend_api
     container_name: master-backend-api
-    restart: on-failure
+    restart: unless-stopped
     env_file: .env
     healthcheck:
       test: curl -f http://localhost:10000/docs/ || exit 1
@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile
       context: ./web_jinja
     container_name: web-jinja
-    restart: on-failure
+    restart: unless-stopped
     env_file: .env
     healthcheck:
       test: curl -f http://localhost:15000/docs/ || exit 1
@@ -93,7 +93,7 @@ services:
       dockerfile: Dockerfile
       context: ./notification_service
     container_name: notification_service
-    restart: on-failure
+    restart: unless-stopped
     env_file: .env
     volumes:
       - ./notification_service/app:/app
@@ -245,6 +245,7 @@ services:
     networks:
       - main_network
 
+  # metrics
   prometheus:
     image: prom/prometheus
     volumes:
@@ -266,16 +267,33 @@ services:
     depends_on:
       - prometheus
 
+  # logs
+#
+#  logstash:
+#    image: docker.elastic.co/logstash/logstash:8.5.3
+#    container_name: logstash
+#    volumes:
+#      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#    depends_on:
+#      - elasticsearch
+#    ports:
+#      - "5000:5000"
+#      - "9600:9600"  # API Logstash для моніторингу http://127.0.0.1:9600/
+#    environment:
+#      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+#
+#    networks:
+#      - main_network
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
       - ELASTIC_USERNAME=elastic
       - ELASTIC_PASSWORD=changeme
-
     ports:
       - "9200:9200"
     volumes:
@@ -289,12 +307,14 @@ services:
           retries: 5
 
   kibana:
+    # 127.0.0.1:5601
+    # management-stack management-
     image: docker.elastic.co/kibana/kibana:8.7.0
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=changeme
+#      - ELASTICSEARCH_USERNAME=elastic
+#      - ELASTICSEARCH_PASSWORD=changeme
     ports:
       - "5601:5601"
     depends_on:
