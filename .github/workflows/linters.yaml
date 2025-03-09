@@ -34,6 +34,12 @@ jobs:
           if [ ! -f pyproject.toml ]; then
             poetry init -n
           fi
+
+          # Add package-mode = false to pyproject.toml if not present
+          if ! grep -q 'package-mode' pyproject.toml; then
+            echo '[tool.poetry]' >> pyproject.toml
+            echo 'package-mode = false' >> pyproject.toml
+          fi
           poetry install
           poetry add black --dev
           poetry add isort --dev
