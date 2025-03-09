@@ -29,4 +29,6 @@ USER appuser
 
 EXPOSE 10000
 
+RUN mkdir -p /app/tmp_uds && chmod 777 /app/tmp_uds
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]

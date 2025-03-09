@@ -21,22 +21,25 @@ services:
       dockerfile: Dockerfile
       context: ./master_backend_api
     container_name: master-backend-api
-    restart: unless-stopped
+    hostname: master-backend-api
+    restart: always
     env_file: .env
     healthcheck:
-      test: curl -f http://localhost:10000/docs/ || exit 1
+      test: curl -f http://localhost:10000/docs || exit 1
       interval: 10s
       timeout: 10s
       retries: 3
       start_period: 10s
     volumes:
       - ./master_backend_api/app:/app
+      - uds_socket:/app/tmp_uds
     ports:
       - "10000:10000"
     command: |
       sh -c "
           alembic upgrade head
-          uvicorn main:app --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log
+          uvicorn main:app --port=10000 --host=0.0.0.0 --workers 1 --reload & /
+          uvicorn main:app --uds=/app/tmp_uds/master-backend.sock --workers 1 --reload --no-access-log
       "
     # gunicorn -w 4 -b 0.0.0.0:10000 -k uvicorn.workers.UvicornWorker main:app
     networks:
@@ -66,18 +69,20 @@ services:
     restart: unless-stopped
     env_file: .env
     healthcheck:
-      test: curl -f http://localhost:15000/docs/ || exit 1
+      test: curl -f http://localhost:15000/docs || exit 1
       interval: 10s
       timeout: 10s
       retries: 3
       start_period: 10s
     volumes:
       - ./web_jinja/app:/app
+      - uds_socket:/app/tmp_uds
     ports:
       - "15000:15000"
     command: |
       sh -c "
-          uvicorn main:app --port=15000 --host=0.0.0.0 --workers 1 --reload --no-access-log
+        uvicorn main:app --port=15000 --host=0.0.0.0 --workers 1 --reload --no-access-log & \
+        uvicorn main:app --uds=/app/tmp_uds/master-backend.sock --workers 1 --reload --no-access-log
       "
     # gunicorn -w 4 -b 0.0.0.0:15000 -k uvicorn.workers.UvicornWorker main:app
     networks:
@@ -332,6 +337,10 @@ volumes:
   rabbitmq-data:
   s3-data:
   elastic_data:
+  uds_socket:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
 
 networks:
   main_network:
