@@ -251,10 +251,25 @@ services:
       - main_network
 
   # metrics
+#  https://youtu.be/WWzl53ObYvo?si=gGxzdKIBQg0f_y8Q
+#  https://youtu.be/x3bSuGH8R28?si=L2pJnUHAtYBPcxTq
+#  https://youtu.be/1RpbstvgnVE?si=BnZ97w2dmcPgQ98-
   prometheus:
     image: prom/prometheus
+    restart: always
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus_data:/prometheus  # Директори для даних Prometheus
+      - ./logs/prometheus.log:/var/log/prometheus.log  # Логи Prometheus
+    logging:
+      driver: "json-file"
+#      driver: "local"
+#      driver: "syslog"
+      options:
+        max-size: "10m"  # Обмеження розміру файлу
+        max-file: "3"     # Зберігати 3 файли
+#    command:
+#      - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
       - "9090:9090"
     networks:
