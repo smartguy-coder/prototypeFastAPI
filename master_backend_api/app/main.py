@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from applications.admin.admin_handler import add_sqladmin_interface
 from applications.auth.router import router_auth
@@ -11,7 +12,22 @@ from services.redis_service import redis_service
 from settings import settings
 import sentry_sdk
 from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Counter, Gauge
 import logging
+
+request_login_counter = Counter("custom_requests_login_total", "Total requests to /api/auth/login")
+active_users = Gauge("active_users", "Number of active users")
+
+
+class CustomMetricsMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        import random
+
+        active_users.set(random.randint(10, 500))
+        if request.url.path == "/api/auth/login":
+            request_login_counter.inc()
+        response = await call_next(request)
+        return response
 
 
 sentry_sdk.init(
@@ -51,6 +67,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    _app.add_middleware(CustomMetricsMiddleware)
 
     _app.include_router(router_auth, prefix="/auth", tags=["Users", "Auth"])
     _app.include_router(router_users, prefix="/users", tags=["Users"])

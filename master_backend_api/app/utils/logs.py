@@ -21,11 +21,12 @@ class ElasticsearchHandler(logging.Handler, logging.Formatter):
             "message": record.getMessage(),  # Повідомлення лога
             "logger": record.name,  # Назва логера
             "exception": None,  # Виключення, якщо є
-            "extra": {
-                k: str(v)
-                for k, v in record.__dict__.items()
-                # if k not in vars(logging.LogRecord("", "", "", "", "", "", "", "")).keys()
-            },
+            # "extra": {
+            #     k: str(v)
+            #     for k, v in record.__dict__.items()
+            #     # if k not in vars(logging.LogRecord("", "", "", "", "", "", "", "")).keys()
+            # },
+            "extra": record.__dict__.get("extra", {}),
         }
 
         # Якщо в записі є виключення, додаємо його
