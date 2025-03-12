@@ -6,29 +6,63 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
-from applications.products.crud import category_manager, product_manager
-from applications.products.models import Category, Product
+from applications.products.crud import category_manager, product_manager, order_manager, order_product_manager
+from applications.products.models import Category, Product, OrderProduct, Order
 from applications.products.schemas import (
     NewCategory,
     PaginationSavedCategoriesResponse,
     SavedCategory,
     SavedProduct,
     PaginationSavedProductsResponse,
+    OrderSchema,
+    AddOrderProductBodySchema,
 )
+from applications.users.models import User
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
 from dependencies.file_storage import validate_image, validate_images
-from dependencies.security import require_permissions
+from dependencies.security import require_permissions, get_current_user
 from storage.s3 import s3_storage
 from prometheus_client import Counter
 
 router_categories = APIRouter()
 router_products = APIRouter()
+router_order = APIRouter()
 
 custom_requests_categories_total = Counter(
     "custom_requests_categories_total", "Total requests to /api/products/categories"
 )
+
+
+@router_order.get("/")
+async def get_current_order(
+    user: User = Depends(get_current_user), session: AsyncSession = Depends(get_async_session)
+) -> OrderSchema:
+    order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
+    return order
+
+
+@router_order.post("/addProduct")
+async def add_product_to_order(
+    product_data: AddOrderProductBodySchema,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+) -> OrderSchema:
+    product = await product_manager.get_item(field=Product.id, field_value=product_data.product_id, session=session)
+    if not product:
+        raise HTTPException(
+            detail=f"Product with id {product_data.product_id} not found",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    order: Order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
+    await order_product_manager.set_quantity_and_price(
+        product=product, order_id=order.id, quantity=product_data.quantity, session=session
+    )
+    await session.refresh(order)
+
+    return order
 
 
 @router_categories.post(
@@ -76,7 +110,7 @@ async def get_categories(
     session: AsyncSession = Depends(get_async_session),
 ) -> PaginationSavedCategoriesResponse:
     custom_requests_categories_total.inc()
-    result = await category_manager.get_items(
+    result = await category_manager.get_items_paginated(
         params=params,
         search_fields=[Category.name],
         targeted_schema=SavedCategory,
@@ -180,7 +214,7 @@ async def get_products(
     session: AsyncSession = Depends(get_async_session),
 ) -> PaginationSavedProductsResponse:
 
-    result = await product_manager.get_items(
+    result = await product_manager.get_items_paginated(
         params=params,
         search_fields=[Product.title],
         targeted_schema=SavedProduct,

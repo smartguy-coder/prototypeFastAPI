@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     JWT_ALGORITHM: str
     REFRESH_TOKEN_TIME_MINUTES: int = 60 * 24  # one day
-    ACCESS_TOKEN_TIME_MINUTES: int = 5
+    ACCESS_TOKEN_TIME_MINUTES: int = 5000000
 
     REDIS_PASSWORD: str
     REDIS_PORT: int
