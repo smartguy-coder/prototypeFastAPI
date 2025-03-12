@@ -8,9 +8,13 @@ from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
 from applications.users.crud import user_manager
 from applications.users.models import User
-from applications.users.schemas import (PaginationSavedUserResponse,
-                                        PatchDetailedUser, RegisterUserRequest,
-                                        SavedUser, UserRegistrationMessage)
+from applications.users.schemas import (
+    PaginationSavedUserResponse,
+    PatchDetailedUser,
+    RegisterUserRequest,
+    SavedUser,
+    UserRegistrationMessage,
+)
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
@@ -27,9 +31,7 @@ async def create_user(
     new_user: RegisterUserRequest,
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
-    maybe_user: User | None = await user_manager.get_item(
-        field=User.email, field_value=new_user.email, session=session
-    )
+    maybe_user: User | None = await user_manager.get_item(field=User.email, field_value=new_user.email, session=session)
     if maybe_user:
         raise HTTPException(
             detail=f"User {maybe_user.name} with email {maybe_user.email} already exists",
@@ -48,9 +50,7 @@ async def create_user(
             lang="uk",
             email=saved_user.email,
             base_url=str(request.base_url),
-            redirect_url=str(
-                request.url_for("verify_user", user_uuid=saved_user.uuid_data)
-            ),
+            redirect_url=str(request.url_for("verify_user", user_uuid=saved_user.uuid_data)),
         ).dict(),
         queue_name=SupportedQueues.USER_REGISTRATION,
     )
@@ -58,23 +58,17 @@ async def create_user(
 
 
 @router_users.get("/verify/{user_uuid}", description="verification via email expected")
-async def verify_user(
-    user_uuid: uuid.UUID, session: AsyncSession = Depends(get_async_session)
-) -> StatusSuccess:
+async def verify_user(user_uuid: uuid.UUID, session: AsyncSession = Depends(get_async_session)) -> StatusSuccess:
     await user_manager.activate_user_account(user_uuid, session)
     return StatusSuccess()
 
 
 @router_users.get("/{id}")
 async def get_user(
-    user_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
+    user_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
-    user = await user_manager.get_item(
-        field=User.id, field_value=user_id, session=session
-    )
+    user = await user_manager.get_item(field=User.id, field_value=user_id, session=session)
     if not user:
         raise HTTPException(
             detail=f"User with id #{user_id} was not found",
@@ -89,7 +83,7 @@ async def get_users(
     params: Annotated[SearchParams, Depends()],
     session: AsyncSession = Depends(get_async_session),
 ) -> PaginationSavedUserResponse:
-    result = await user_manager.get_items(
+    result = await user_manager.get_items_paginated(
         params=params,
         search_fields=[User.name, User.email],
         targeted_schema=SavedUser,
@@ -101,14 +95,10 @@ async def get_users(
 @router_users.patch("/{id}")
 async def update_user(
     user_data: PatchDetailedUser,
-    user_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
+    user_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedUser:
-    user_updated = await user_manager.patch_item(
-        user_id, data_to_patch=user_data, session=session
-    )
+    user_updated = await user_manager.patch_item(user_id, data_to_patch=user_data, session=session)
     return SavedUser.from_orm(user_updated)
 
 
@@ -117,9 +107,7 @@ async def update_user(
     dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_DELETE_USER]))],
 )
 async def delete_user(
-    user_id: int = Path(
-        ..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"
-    ),
+    user_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> StatusSuccess:
     await user_manager.delete_item(user_id, session=session)

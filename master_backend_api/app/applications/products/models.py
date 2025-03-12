@@ -52,6 +52,11 @@ class Order(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
         lazy="selectin",
     )
 
+    @property
+    def cost(self) -> float:
+        _cost = sum([product.price * product.quantity for product in self.order_products])
+        return _cost
+
 
 class OrderProduct(PKMixin, CreateUpdateAtMixin, Base):
     __tablename__ = "order_products"
@@ -65,6 +70,10 @@ class OrderProduct(PKMixin, CreateUpdateAtMixin, Base):
     order = relationship("Order", back_populates="order_products")
 
     __table_args__ = (UniqueConstraint("order_id", "product_id", name="uq_order_product"),)
+
+    @property
+    def total(self) -> float:
+        return self.price * self.quantity
 
     def __str__(self):
         return f"OrderProduct {self.product.title} - #{self.id}, {self.quantity} >> {self.price} = {self.quantity * self.price}"

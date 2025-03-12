@@ -1,3 +1,5 @@
+from typing import Annotated, Optional
+
 from pydantic import BaseModel, Field
 
 from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse
@@ -32,3 +34,32 @@ class SavedProduct(BaseIdField):
 
 class PaginationSavedProductsResponse(PaginationResponse):
     items: list[SavedProduct]
+
+
+class OrderProductSchema(BaseModel):
+    price: float
+    quantity: int
+    product_id: int
+    total: float
+
+    class Config:
+        from_attributes = True
+        alias_generator = to_camel
+        populate_by_name = True
+
+
+class OrderSchema(BaseCreatedAtField):
+    is_closed: bool
+    user_id: int
+    cost: float
+    order_products: list[OrderProductSchema]
+
+    class Config:
+        from_attributes = True
+        alias_generator = to_camel
+        populate_by_name = True
+
+
+class AddOrderProductBodySchema(BaseModel):
+    quantity: Annotated[Optional[int], Field(default=1, ge=1, le=5000)] = 1
+    product_id: Annotated[int, Field(ge=1)]

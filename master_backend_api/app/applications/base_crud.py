@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import asc, delete, desc, func, or_, select, update, exists
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import InstrumentedAttribute
 
 from applications.base_model_and_mixins.base_models import Base
@@ -47,7 +48,7 @@ class BaseCRUD(ABC):
         result = await session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_items(
+    async def get_items_paginated(
         self,
         *,
         session: AsyncSession,
@@ -83,6 +84,17 @@ class BaseCRUD(ABC):
             limit=params.limit,
             pages=ceil(total_count / params.limit),
         )
+
+    async def get_items(
+        self,
+        *,
+        session: AsyncSession,
+        field_value: Any,
+        field: InstrumentedAttribute,
+    ) -> list[Base]:
+        query = select(self.model).filter(field == field_value)
+        result = await session.execute(query)
+        return result.scalars().all()
 
     async def patch_item(
         self, instance_id: int, *, session: AsyncSession, data_to_patch: BaseModel, exclude_unset: bool = True
@@ -126,3 +138,24 @@ class BaseCRUD(ABC):
         query = select(exists().where(field == field_value))
         result = await session.execute(query)
         return result.scalar()
+
+    async def get_or_create(self, session: AsyncSession, only_get: bool = False, defaults: dict = None, **kwargs):
+
+        query = select(self.model).filter_by(**kwargs)
+        result = await session.execute(query)
+        instance = result.scalar_one_or_none()
+
+        if instance or only_get:
+            return instance
+
+        instance = self.model(**kwargs, **(defaults or {}))
+        session.add(instance)
+
+        try:
+            await session.commit()
+            await session.refresh(instance)
+            return instance
+        except IntegrityError:
+            await session.rollback()
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
