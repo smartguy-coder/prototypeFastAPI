@@ -72,7 +72,7 @@ def get_application() -> FastAPI:
     _app.include_router(router_auth, prefix="/auth", tags=["Users", "Auth"])
     _app.include_router(router_users, prefix="/users", tags=["Users"])
     _app.include_router(router_products, prefix="/products", tags=["Products"])
-    _app.include_router(router_categories, prefix="/categories", tags=["Products", "Categories"])
+    _app.include_router(router_categories, prefix="/categories", tags=["Products"])
 
     add_sqladmin_interface(_app)
 

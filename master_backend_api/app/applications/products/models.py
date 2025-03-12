@@ -1,9 +1,8 @@
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from applications.base_model_and_mixins.base_mixins import (
-    CreateUpdateAtMixin, PKMixin, UUIDMixin)
+from applications.base_model_and_mixins.base_mixins import CreateUpdateAtMixin, PKMixin, UUIDMixin
 from applications.base_model_and_mixins.base_models import Base
 
 
@@ -29,11 +28,45 @@ class Product(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
     price: Mapped[float] = mapped_column(nullable=False)
     images: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
     main_image: Mapped[str] = mapped_column(nullable=False)
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("categories.id", ondelete="RESTRICT"), nullable=False
-    )
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="RESTRICT"), nullable=False)
 
     category = relationship("Category", back_populates="products")
+    order_products = relationship("OrderProduct", back_populates="product")
 
     def __str__(self):
         return f"Product {self.title} - #{self.id}"
+
+
+class Order(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
+    __tablename__ = "orders"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    is_closed: Mapped[bool] = mapped_column(default=False)
+
+    user = relationship("User", back_populates="orders")
+    order_products = relationship(
+        "OrderProduct",
+        back_populates="order",
+        # lazy=False,
+        # lazy="joined",
+        lazy="selectin",
+    )
+
+
+class OrderProduct(PKMixin, CreateUpdateAtMixin, Base):
+    __tablename__ = "order_products"
+
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"))
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    price: Mapped[float] = mapped_column(default=0.0)
+    quantity: Mapped[int] = mapped_column(default=0)
+
+    product = relationship("Product", back_populates="order_products")
+    order = relationship("Order", back_populates="order_products")
+
+    __table_args__ = (UniqueConstraint("order_id", "product_id", name="uq_order_product"),)
+
+    def __str__(self):
+        return f"OrderProduct {self.product.title} - #{self.id}, {self.quantity} >> {self.price} = {self.quantity * self.price}"
+
+    __repr__ = __str__

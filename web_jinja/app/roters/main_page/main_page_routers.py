@@ -21,8 +21,3 @@ async def index(
         context=context,
     )
     return response
-
-
-@router.get("/api/categories/")
-def dd():
-    return {"h": 5656}

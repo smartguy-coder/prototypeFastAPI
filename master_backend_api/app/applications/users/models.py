@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from applications.base_model_and_mixins.base_mixins import CreateUpdateAtMixin, PKMixin, UUIDMixin
 from applications.base_model_and_mixins.base_models import Base
@@ -29,6 +29,8 @@ class User(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
     use_token_since: Mapped[datetime] = mapped_column(
         default=func.now(), doc="Used to force logout, not allowing token issued before"
     )
+
+    orders = relationship("Order", back_populates="user")
 
     def __repr__(self) -> str:
         return f"User {self.name} -> #{self.id}"

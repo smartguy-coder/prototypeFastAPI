@@ -20,7 +20,9 @@ async def call_main_api(endpoint: URLS):
         curl --unix-socket /app/tmp_uds/master-backend.sock http://localhost/api/categories/
         Якщо цей запит успішно повертає відповідь, це підтверджує, що сокет працює і використовується правильно.
 
-    Якщо ви хочете перевірити, чи web-jinja контейнер правильно використовує UDS для комунікації з master-backend-api, переконайтеся, що вказаний шлях до сокета (/app/tmp_uds/master-backend.sock) доступний у відповідній мережі контейнерів. Ви можете зробити запит з іншого контейнера:
+    Якщо ви хочете перевірити, чи web-jinja контейнер правильно використовує UDS для комунікації з master-backend-api,
+    переконайтеся, що вказаний шлях до сокета (/app/tmp_uds/master-backend.sock) доступний у відповідній мережі
+    контейнерів. Ви можете зробити запит з іншого контейнера:
 
         curl --unix-socket /app/tmp_uds/master-backend.sock http://localhost/api/categories/
 

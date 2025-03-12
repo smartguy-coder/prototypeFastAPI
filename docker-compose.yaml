@@ -98,7 +98,7 @@ services:
       dockerfile: Dockerfile
       context: ./notification_service
     container_name: notification_service
-    restart: unless-stopped
+    restart: always
     env_file: .env
     volumes:
       - ./notification_service/app:/app

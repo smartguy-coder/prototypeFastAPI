@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from sqladmin import Admin
 
 from applications.admin.admin_auth import AdminAuth
-from applications.admin.admin_models import CategoryAdmin, UserAdmin
+from applications.admin.admin_models import CategoryAdmin, UserAdmin, ProductAdmin
 from applications.base_model_and_mixins.base_models import sync_engine
 from settings import settings
 
@@ -13,6 +13,6 @@ def add_sqladmin_interface(app: FastAPI):
     authentication_backend = AdminAuth(secret_key=settings.ADMIN_SECRET_KEY)
     admin = Admin(app, sync_engine, authentication_backend=authentication_backend)
 
-    models = (UserAdmin, CategoryAdmin)
+    models = (UserAdmin, CategoryAdmin, ProductAdmin)
     for model in models:
         admin.add_view(model)
