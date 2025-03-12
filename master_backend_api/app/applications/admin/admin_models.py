@@ -1,6 +1,6 @@
 from sqladmin import ModelView
 
-from applications.products.models import Category
+from applications.products.models import Category, Product
 from applications.users.models import User
 
 
@@ -26,6 +26,22 @@ class CategoryAdmin(ModelView, model=Category):
     name = "Категорія"
     name_plural = "Категорії"
     form_columns = ["name"]
-    # icon = "fa-list-ul "
     category = "products"
     icon = "fa-solid fa-chart-line"
+
+
+class ProductAdmin(ModelView, model=Product):
+    column_list = [Product.id, Product.title, Product.price]
+    column_labels = {
+        "id": "ID продукту",
+        "title": "Назва продукту",
+        "price": "Ціна",
+        "category": "Категорія",
+        "images": "Зображення",
+        "main_image": "Головне зображення",
+    }
+    name = "Продукт"
+    name_plural = "Продукти"
+    form_columns = ["title", "price", "category"]
+    category = "products"
+    icon = "fa-solid fa-box"

@@ -5,6 +5,7 @@ ENV = --env-file .env
 APP_FILE = docker-compose.yaml
 STORAGES_FILE = docker_compose.yaml
 APP_CONTAINER = master-backend-api
+EXEC = ${DC} exec
 
 .PHONY: app
 app:

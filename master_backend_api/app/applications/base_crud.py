@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from fastapi import HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import asc, delete, desc, func, or_, select, update
+from sqlalchemy import asc, delete, desc, func, or_, select, update, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
@@ -116,3 +116,13 @@ class BaseCRUD(ABC):
         await session.execute(query)
         await session.commit()
         return True
+
+    async def any_item_exists(
+        self,
+        session: AsyncSession,
+        field_value: Any,
+        field: InstrumentedAttribute,
+    ) -> bool:
+        query = select(exists().where(field == field_value))
+        result = await session.execute(query)
+        return result.scalar()

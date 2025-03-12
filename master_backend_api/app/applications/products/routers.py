@@ -8,7 +8,13 @@ from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
 from applications.products.crud import category_manager, product_manager
 from applications.products.models import Category, Product
-from applications.products.schemas import NewCategory, PaginationSavedCategoriesResponse, SavedCategory, SavedProduct
+from applications.products.schemas import (
+    NewCategory,
+    PaginationSavedCategoriesResponse,
+    SavedCategory,
+    SavedProduct,
+    PaginationSavedProductsResponse,
+)
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
@@ -100,7 +106,15 @@ async def delete_category(
     category_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> StatusSuccess:
-    # todo check deleting with products in it
+    has_product = await product_manager.any_item_exists(
+        field=Product.category_id, field_value=category_id, session=session
+    )
+    if has_product:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Products with category #{category_id} exists",
+        )
+
     await category_manager.delete_item(category_id, session=session)
     return StatusSuccess()
 
@@ -148,8 +162,6 @@ async def create_product(
             status_code=status.HTTP_507_INSUFFICIENT_STORAGE,
             detail=f"Failed to upload image: {e}",
         )
-    print(main_image_url)
-    print(images_urls)
 
     created_product = await product_manager.create_instance(
         title=title.strip(),
@@ -159,5 +171,35 @@ async def create_product(
         category_id=category.id,
         session=session,
     )
-    print(created_product)
     return SavedProduct.from_orm(created_product)
+
+
+@router_products.get("/")
+async def get_products(
+    params: Annotated[SearchParams, Depends()],
+    session: AsyncSession = Depends(get_async_session),
+) -> PaginationSavedProductsResponse:
+
+    result = await product_manager.get_items(
+        params=params,
+        search_fields=[Product.title],
+        targeted_schema=SavedProduct,
+        session=session,
+    )
+    return result
+
+
+@router_products.get("/{id}")
+async def get_product(
+    product_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
+    session: AsyncSession = Depends(get_async_session),
+) -> SavedProduct:
+
+    product = await product_manager.get_item(field=Product.id, field_value=product_id, session=session)
+    if not product:
+        raise HTTPException(
+            detail=f"Product with id #{product_id} was not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    return SavedProduct.from_orm(product)
