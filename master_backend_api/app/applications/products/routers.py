@@ -15,7 +15,7 @@ from applications.products.schemas import (
     SavedProduct,
     PaginationSavedProductsResponse,
     OrderSchema,
-    AddOrderProductBodySchema,
+    AddRemoveOrderProductBodySchema,
 )
 from applications.users.models import User
 from constants.messages import HelpTexts
@@ -45,7 +45,30 @@ async def get_current_order(
 
 @router_order.post("/addProduct")
 async def add_product_to_order(
-    product_data: AddOrderProductBodySchema,
+    product_data: AddRemoveOrderProductBodySchema,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+) -> OrderSchema:
+    """Add product to order. If product already in order - we will increase it quantity. Always applies current price"""
+    product = await product_manager.get_item(field=Product.id, field_value=product_data.product_id, session=session)
+    if not product:
+        raise HTTPException(
+            detail=f"Product with id {product_data.product_id} not found",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    order: Order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
+    await order_product_manager.set_quantity_and_price(
+        product=product, order_id=order.id, quantity=product_data.quantity, session=session
+    )
+    order: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
+
+    return order
+
+
+@router_order.post("/decreaseRemoveProduct")
+async def decrease_remove_product_from_order(
+    product_data: AddRemoveOrderProductBodySchema,
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
 ) -> OrderSchema:
@@ -57,8 +80,9 @@ async def add_product_to_order(
         )
 
     order: Order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
+    decrease_quantity = product_data.quantity * -1
     await order_product_manager.set_quantity_and_price(
-        product=product, order_id=order.id, quantity=product_data.quantity, session=session
+        product=product, order_id=order.id, quantity=decrease_quantity, session=session
     )
     order: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
 

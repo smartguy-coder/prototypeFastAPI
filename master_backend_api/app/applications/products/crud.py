@@ -1,7 +1,8 @@
 from applications.base_crud import BaseCRUD
 from applications.products.models import Category, Product, Order, OrderProduct
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy import asc, delete, desc, func, or_, select, update, exists
+from sqlalchemy.orm import selectinload
 
 
 class CategoryDBManager(BaseCRUD):
@@ -29,13 +30,15 @@ class OrderDBManager(BaseCRUD):
         щоб уникнути дублювання рядків.
 
         """
-        order = (
-            session.query(self.model)
-            .options(joinedload(self.model.order_products).joinedload(OrderProduct.product))
-            .filter(Order.id == order_id)
-            .scalars()
-            .first()
+        result = await session.execute(
+            select(self.model)
+            .options(selectinload(self.model.order_products).selectinload(OrderProduct.product))
+            .filter(self.model.id == order_id)
+            .filter(OrderProduct.quantity > 0)
         )
+
+        order = result.scalars().first()
+        order.order_products = [op for op in order.order_products if op.quantity > 0]
         return order
 
 
@@ -50,6 +53,8 @@ class OrderProductDBManager(BaseCRUD):
             session=session, order_id=order_id, product_id=product.id
         )
         order_product.quantity += quantity
+        if order_product.quantity < 0:
+            order_product.quantity = 0  # we do not delete - leave it as a log
         order_product.price = product.price
         session.add(order_product)
         await session.commit()

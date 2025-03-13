@@ -73,6 +73,6 @@ class OrderSchema(BaseCreatedAtField):
         populate_by_name = True
 
 
-class AddOrderProductBodySchema(BaseModel):
+class AddRemoveOrderProductBodySchema(BaseModel):
     quantity: Annotated[Optional[int], Field(default=1, ge=1, le=5000)] = 1
-    product_id: Annotated[int, Field(ge=1)]
+    product_id: Annotated[int, Field(ge=1, description="It is Product id, not OrderProduct id")]
