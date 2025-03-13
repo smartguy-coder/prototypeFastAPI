@@ -66,7 +66,7 @@ class OrderProduct(PKMixin, CreateUpdateAtMixin, Base):
     price: Mapped[float] = mapped_column(default=0.0)
     quantity: Mapped[int] = mapped_column(default=0)
 
-    product = relationship("Product", back_populates="order_products")
+    product = relationship("Product", back_populates="order_products", lazy="selectin")
     order = relationship("Order", back_populates="order_products")
 
     __table_args__ = (UniqueConstraint("order_id", "product_id", name="uq_order_product"),)
