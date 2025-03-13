@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from applications.base_queries import SearchParams
 from applications.base_schemas import StatusSuccess
 from applications.products.crud import category_manager, product_manager, order_manager, order_product_manager
-from applications.products.models import Category, Product, OrderProduct, Order
+from applications.products.models import Category, Product, Order
 from applications.products.schemas import (
     NewCategory,
     PaginationSavedCategoriesResponse,
@@ -15,13 +15,14 @@ from applications.products.schemas import (
     SavedProduct,
     PaginationSavedProductsResponse,
     OrderSchema,
-    AddRemoveOrderProductBodySchema,
 )
 from applications.users.models import User
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
 from dependencies.file_storage import validate_image, validate_images
+from dependencies.order import get_order
+from dependencies.product import get_product
 from dependencies.security import require_permissions, get_current_user
 from storage.s3 import s3_storage
 from prometheus_client import Counter
@@ -45,48 +46,34 @@ async def get_current_order(
 
 @router_order.post("/addProduct")
 async def add_product_to_order(
-    product_data: AddRemoveOrderProductBodySchema,
-    user: User = Depends(get_current_user),
+    quantity: int = Body(gt=1, default=1),
+    product: Product = Depends(get_product),
+    order: Order = Depends(get_order),
     session: AsyncSession = Depends(get_async_session),
 ) -> OrderSchema:
     """Add product to order. If product already in order - we will increase it quantity. Always applies current price"""
-    product = await product_manager.get_item(field=Product.id, field_value=product_data.product_id, session=session)
-    if not product:
-        raise HTTPException(
-            detail=f"Product with id {product_data.product_id} not found",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
-    order: Order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
     await order_product_manager.set_quantity_and_price(
-        product=product, order_id=order.id, quantity=product_data.quantity, session=session
+        product=product, order_id=order.id, quantity=quantity, session=session
     )
-    order: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
+    order_with_products: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
 
-    return order
+    return order_with_products
 
 
 @router_order.post("/decreaseRemoveProduct")
 async def decrease_remove_product_from_order(
-    product_data: AddRemoveOrderProductBodySchema,
-    user: User = Depends(get_current_user),
+    quantity: int = Body(ge=1, default=1),
+    product: Product = Depends(get_product),
+    order: Order = Depends(get_order),
     session: AsyncSession = Depends(get_async_session),
 ) -> OrderSchema:
-    product = await product_manager.get_item(field=Product.id, field_value=product_data.product_id, session=session)
-    if not product:
-        raise HTTPException(
-            detail=f"Product with id {product_data.product_id} not found",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
-    order: Order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
-    decrease_quantity = product_data.quantity * -1
+    decrease_quantity = quantity * -1
     await order_product_manager.set_quantity_and_price(
         product=product, order_id=order.id, quantity=decrease_quantity, session=session
     )
-    order: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
+    order_with_products: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
 
-    return order
+    return order_with_products
 
 
 @router_categories.post(
