@@ -1,6 +1,7 @@
 from applications.base_crud import BaseCRUD
 from applications.products.models import Category, Product, Order, OrderProduct
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 class CategoryDBManager(BaseCRUD):
@@ -19,6 +20,23 @@ class OrderDBManager(BaseCRUD):
 
     def __init__(self):
         self.model = Order
+
+    async def get_order_with_product(self, order_id: int, session: AsyncSession):
+        """
+        Це стандартна поведінка SQLAlchemy при joinedload(), оскільки:
+
+        Якщо використовується "один-до-багатьох" (Order -> OrderProduct), SQLAlchemy окремо витягує order_products,
+        щоб уникнути дублювання рядків.
+
+        """
+        order = (
+            session.query(self.model)
+            .options(joinedload(self.model.order_products).joinedload(OrderProduct.product))
+            .filter(Order.id == order_id)
+            .scalars()
+            .first()
+        )
+        return order
 
 
 class OrderProductDBManager(BaseCRUD):

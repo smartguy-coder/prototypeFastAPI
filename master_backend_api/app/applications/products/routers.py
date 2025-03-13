@@ -60,7 +60,7 @@ async def add_product_to_order(
     await order_product_manager.set_quantity_and_price(
         product=product, order_id=order.id, quantity=product_data.quantity, session=session
     )
-    await session.refresh(order)
+    order: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
 
     return order
 

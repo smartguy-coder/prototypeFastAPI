@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse
 from utils.camel_case import to_camel
@@ -36,11 +36,24 @@ class PaginationSavedProductsResponse(PaginationResponse):
     items: list[SavedProduct]
 
 
+class ProductSchema(BaseModel):
+    id: int
+    title: str
+    price: float = Field(..., alias="currentPrice")
+    main_image: str
+    images: list[str]
+
+    class Config:
+        from_attributes = True
+        alias_generator = to_camel
+        populate_by_name = True
+
+
 class OrderProductSchema(BaseModel):
     price: float
     quantity: int
-    product_id: int
     total: float
+    product: ProductSchema
 
     class Config:
         from_attributes = True
