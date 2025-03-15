@@ -47,14 +47,23 @@ class OrderProductDBManager(BaseCRUD):
     def __init__(self):
         self.model = OrderProduct
 
-    async def set_quantity_and_price(self, product: Product, order_id: int, quantity: int, session: AsyncSession):
-        # todo use for decrease
+    async def change_quantity_and_set_current_price(
+        self,
+        product: Product,
+        order_id: int,
+        quantity: int,
+        session: AsyncSession,
+        is_set_quantity: bool = False,
+    ):
         order_product: OrderProduct = await self.get_or_create(
             session=session, order_id=order_id, product_id=product.id
         )
-        order_product.quantity += quantity
-        if order_product.quantity < 0:
-            order_product.quantity = 0  # we do not delete - leave it as a log
+        if is_set_quantity:
+            order_product.quantity = abs(quantity)
+        else:
+            order_product.quantity += quantity
+            if order_product.quantity < 0:
+                order_product.quantity = 0  # we do not delete - leave it as a log in DB
         order_product.price = product.price
         session.add(order_product)
         await session.commit()

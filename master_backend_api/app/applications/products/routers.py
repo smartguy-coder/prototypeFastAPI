@@ -44,32 +44,34 @@ async def get_current_order(
     return order
 
 
-@router_order.post("/addProduct")
+@router_order.patch("/addProduct")
 async def add_product_to_order(
+    order: Order = Depends(get_order),  # depends on user, so must be first
     quantity: int = Body(gt=1, default=1),
+    is_set_quantity: bool = Body(default=False, description="Used to set precise quantity"),
     product: Product = Depends(get_product),
-    order: Order = Depends(get_order),
     session: AsyncSession = Depends(get_async_session),
 ) -> OrderSchema:
     """Add product to order. If product already in order - we will increase it quantity. Always applies current price"""
-    await order_product_manager.set_quantity_and_price(
-        product=product, order_id=order.id, quantity=quantity, session=session
+    await order_product_manager.change_quantity_and_set_current_price(
+        product=product, order_id=order.id, quantity=quantity, is_set_quantity=is_set_quantity, session=session
     )
     order_with_products: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
 
     return order_with_products
 
 
-@router_order.post("/decreaseRemoveProduct")
+@router_order.patch("/decreaseRemoveProduct")
 async def decrease_remove_product_from_order(
-    quantity: int = Body(ge=1, default=1),
+    order: Order = Depends(get_order),  # depends on user, so must be first
+    quantity: int = Body(gt=1, default=1),
+    is_set_quantity: bool = Body(default=False, description="Used to set precise quantity"),
     product: Product = Depends(get_product),
-    order: Order = Depends(get_order),
     session: AsyncSession = Depends(get_async_session),
 ) -> OrderSchema:
     decrease_quantity = quantity * -1
-    await order_product_manager.set_quantity_and_price(
-        product=product, order_id=order.id, quantity=decrease_quantity, session=session
+    await order_product_manager.change_quantity_and_set_current_price(
+        product=product, order_id=order.id, quantity=decrease_quantity, is_set_quantity=is_set_quantity, session=session
     )
     order_with_products: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
 
