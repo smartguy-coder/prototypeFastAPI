@@ -11,24 +11,26 @@ ENV PYTHONFAULTHANDLER=1 \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    curl gcc libpq-dev make\
+    curl gcc libpq-dev make \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip \
-    && pip install  --no-cache-dir poetry  \
+    && pip install --no-cache-dir poetry \
     && poetry config virtualenvs.create false
 
 COPY pyproject.toml poetry.lock /app/
 RUN poetry install --no-ansi --no-root --no-interaction
 
-
-COPY /app /app
-
+# Додаємо користувача перед копіюванням файлів
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
+COPY --chown=appuser:appgroup /app /app
+
+# Створюємо каталог tmp_uds під root, змінюємо власника та виставляємо права ДО перемикання на appuser
+RUN mkdir -p /app/tmp_uds && chown -R appuser:appgroup /app && chmod 777 /app/tmp_uds
+
 USER appuser
 
 EXPOSE 10000
-
-RUN mkdir -p /app/tmp_uds && chmod 777 /app/tmp_uds
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]

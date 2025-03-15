@@ -1,8 +1,8 @@
 from typing import Annotated, Optional
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field
 
-from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse
+from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse, InstanceVersion
 from utils.camel_case import to_camel
 
 
@@ -10,7 +10,11 @@ class NewCategory(BaseModel):
     name: str = Field(min_length=3, max_length=50, examples=["laptops", "phones"])
 
 
-class SavedCategory(NewCategory, BaseCreatedAtField, BaseIdField):
+class PatchCategorySchema(InstanceVersion, NewCategory):
+    pass
+
+
+class SavedCategory(NewCategory, BaseCreatedAtField, BaseIdField, InstanceVersion):
     class Config:
         from_attributes = True
 

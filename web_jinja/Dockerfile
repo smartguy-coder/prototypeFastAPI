@@ -11,23 +11,28 @@ ENV PYTHONFAULTHANDLER=1 \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    curl gcc libpq-dev make\
+    curl gcc libpq-dev make \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip \
-    && pip install  --no-cache-dir poetry  \
+    && pip install --no-cache-dir poetry \
     && poetry config virtualenvs.create false
 
 COPY pyproject.toml poetry.lock /app/
 RUN poetry install --no-ansi --no-root --no-interaction
 
+# Створюємо директорію tmp_uds до переходу на appuser
+RUN mkdir -p /app/tmp_uds
+
+# Створюємо групу та користувача
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
+# Задаємо права директорії tmp_uds
+RUN chmod 777 /app/tmp_uds
 
 COPY /app /app
 
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
-
-RUN mkdir -p /app/tmp_uds && chmod 777 /app/tmp_uds
 
 EXPOSE 15000
 

@@ -11,6 +11,10 @@ class BaseCreatedAtField(BaseModel):
     created_at: datetime = Field(examples=[datetime.now()])
 
 
+class InstanceVersion(BaseModel):
+    version: int = Field(gt=0, description="Optimistic Offline Lock version")
+
+
 class PaginationResponse(BaseModel):
     items: list
     total: int

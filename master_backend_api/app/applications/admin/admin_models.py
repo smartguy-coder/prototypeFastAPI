@@ -1,7 +1,16 @@
+from typing import TYPE_CHECKING
+
 from sqladmin import ModelView
 
 from applications.products.models import Category, Product
 from applications.users.models import User
+from applications.products.crud import category_manager
+from dependencies.database import get_async_session
+from applications.base_schemas import InstanceVersion
+from starlette.requests import Request
+
+if TYPE_CHECKING:
+    from applications.base_model_and_mixins.base_models import Base
 
 
 class UserAdmin(ModelView, model=User):
@@ -20,14 +29,27 @@ class UserAdmin(ModelView, model=User):
     can_view_details = True
 
 
+class OptimisticOfflineLockValidator:
+    @classmethod
+    async def check_version(cls, model: "Base", provided_version: int) -> None:
+        """if concurrency occurs - will raise hard error (in sentry), but let it be"""
+        session_gen = get_async_session()
+        session = await anext(session_gen)
+        data_to_patch = InstanceVersion(version=provided_version)
+        await category_manager.patch_item(instance_id=model.id, session=session, data_to_patch=data_to_patch)
+
+
 class CategoryAdmin(ModelView, model=Category):
     column_list = [Category.id, Category.name]
     column_labels = {"id": "ID категорії", "name": "Назва категорії"}
     name = "Категорія"
     name_plural = "Категорії"
-    form_columns = ["name"]
+    form_columns = ["name", "version"]
     category = "products"
     icon = "fa-solid fa-chart-line"
+
+    async def on_model_change(self, data: dict, model: "Base", is_created: bool, request: Request) -> None:
+        await OptimisticOfflineLockValidator.check_version(model=model, provided_version=data["version"])
 
 
 class ProductAdmin(ModelView, model=Product):

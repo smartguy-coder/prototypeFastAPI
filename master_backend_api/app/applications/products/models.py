@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, Integer
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -9,11 +9,8 @@ from applications.base_model_and_mixins.base_models import Base
 class Category(PKMixin, CreateUpdateAtMixin, Base):
     __tablename__ = "categories"
 
-    name: Mapped[str] = mapped_column(
-        String,
-        unique=True,
-        nullable=False,
-    )
+    name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     products = relationship("Product", back_populates="category")
 
