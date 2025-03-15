@@ -108,8 +108,17 @@ class BaseCRUD(ABC):
                 detail=f"Item with id #{instance_id} was not found",
                 status_code=status.HTTP_404_NOT_FOUND,
             )
-
         data_for_updating: dict = data_to_patch.model_dump(exclude={"id"}, exclude_unset=exclude_unset)
+
+        optimistic_offline_lock_version = getattr(item, "version")
+        if optimistic_offline_lock_version:
+            if optimistic_offline_lock_version != getattr(data_to_patch, "version"):
+                raise HTTPException(
+                    detail=f"Optimistic Offline Lock for instance enabled, but current version not provided or outdated",
+                    status_code=status.HTTP_409_CONFLICT,
+                )
+            data_for_updating |= {"version": data_to_patch.version + 1}
+
         query = update(self.model).where(self.model.id == instance_id).values(**data_for_updating)
         await session.execute(query)
         await session.commit()

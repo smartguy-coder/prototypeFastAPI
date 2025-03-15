@@ -15,6 +15,7 @@ from applications.products.schemas import (
     SavedProduct,
     PaginationSavedProductsResponse,
     OrderSchema,
+    PatchCategorySchema,
 )
 from applications.users.models import User
 from constants.messages import HelpTexts
@@ -137,7 +138,7 @@ async def get_categories(
     dependencies=[Depends(require_permissions([UserPermissionsEnum.CAN_CREATE_PRODUCT_CATEGORY]))],
 )
 async def update_category(
-    category_data: NewCategory,
+    category_data: PatchCategorySchema,
     category_id: int = Path(..., description=HelpTexts.ITEM_PATH_ID_PARAM, ge=1, alias="id"),
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedCategory:
