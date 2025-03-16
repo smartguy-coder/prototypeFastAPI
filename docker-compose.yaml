@@ -343,6 +343,26 @@ services:
     networks:
       - main_network
 
+  # testing (2 nodes)
+  master_test_node:
+    image: locustio/locust
+    ports:
+     - "8089:8089"
+    volumes:
+      - ./locust_testing:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --master -H http://master-backend-api:10000
+    networks:
+      - main_network
+
+  worker_test_node:
+    image: locustio/locust
+    volumes:
+      - ./locust_testing:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --worker --master-host master_test_node
+    networks:
+      - main_network
+
+
 volumes:
   postgres-data:
     external: false
