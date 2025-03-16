@@ -1,6 +1,9 @@
 {% extends "components/base.html" %}
 
 {% block content %}
-some content
-{{ categories }}
+
+{% include "components/products.html" %}
+{% include "components/pagination.html" %}
+
+
 {% endblock %}
