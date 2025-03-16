@@ -1,4 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field
+import re
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse
 
@@ -9,7 +10,30 @@ class BaseFields(BaseModel):
 
 
 class PasswordField(BaseModel):
-    password: str = Field(description="your unique password", examples=["12345678"], min_length=8)
+    password: str = Field(description="your unique password", examples=["JKghg565*-JK"], min_length=8)
+
+    @model_validator(mode="before")
+    def validate_password_strength(cls, values: dict) -> dict:
+        """FastAPI converts ValueError to irs 422 error"""
+        password = values.get("password")
+
+        if password:
+            if len(password) < 8:
+                raise ValueError("Password must be at least 8 characters long.")
+
+            if " " in password:
+                raise ValueError("Password cannot contain spaces.")
+
+            if not re.search(r"[A-Z]", password):
+                raise ValueError("Password must contain at least one uppercase letter.")
+
+            if not re.search(r"[0-9]", password):
+                raise ValueError("Password must contain at least one digit.")
+
+            if not re.search(r"[\W_]", password):
+                raise ValueError("Password must contain at least one special character.")
+
+        return values
 
 
 class IsActiveField(BaseModel):

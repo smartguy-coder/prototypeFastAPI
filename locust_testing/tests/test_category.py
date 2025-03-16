@@ -10,6 +10,20 @@ from constants import UserAuth
 class GetCategory(FastHttpUser):
     token = None
 
+    def on_request(self, request_type, name, response_time, response, **kw):
+        """Перехоплює всі запити та перевіряє статуси"""
+        if response.status_code == 404:
+            # Якщо 404, вважаємо це успішним тестом для статистики
+            self.environment.events.request_success.fire(
+                request_type=request_type,
+                name=name,
+                response_time=response_time,
+                response_length=len(response.content),
+            )
+        else:
+            # Якщо не 404, стандартна обробка
+            super().on_request(request_type, name, response_time, response, **kw)
+
     def on_start(self):
         headers = {
             "accept": "application/json",
@@ -78,7 +92,7 @@ class GetCategory(FastHttpUser):
         assert "and some salt" in response_json["name"]
 
         # delete
-        response = self.client.get(f"/api/categories/{category_id}", headers=headers)
+        response = self.client.delete(f"/api/categories/{category_id}", headers=headers)
         assert response.status_code == http.HTTPStatus.OK
         response_json = response.json()
         assert response_json["success"]

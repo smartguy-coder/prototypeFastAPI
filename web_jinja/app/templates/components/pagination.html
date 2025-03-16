@@ -1,0 +1,18 @@
+    <!-- Пагінація з відступом та центруванням -->
+    <nav class="mt-5">
+        <ul class="pagination d-flex justify-content-center pagination-lg">
+            {% if page > 1 %}
+            <li class="page-item"><a class="page-link" href="?page={{ page - 1 }}">Попередня</a></li>
+            {% endif %}
+
+            {% for p in range(1, pages + 1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page < pages %}
+            <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}">Наступна</a></li>
+            {% endif %}
+        </ul>
+    </nav>
