@@ -1,18 +1,49 @@
     <!-- Пагінація з відступом та центруванням -->
-    <nav class="mt-5">
-        <ul class="pagination d-flex justify-content-center pagination-lg">
-            {% if page > 1 %}
-            <li class="page-item"><a class="page-link" href="?page={{ page - 1 }}">Попередня</a></li>
-            {% endif %}
+{% if pages > 1 %}
+<nav class="mt-5">
+    <ul class="pagination d-flex justify-content-center pagination-lg">
+        {% if page > 1 %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page - 1 }}" rel="prev">Попередня</a>
+        </li>
+        {% endif %}
 
-            {% for p in range(1, pages + 1) %}
-            <li class="page-item {% if p == page %}active{% endif %}">
-                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-            </li>
-            {% endfor %}
+        {% set delta = 2 %}
+        {% set left = page - delta if page - delta > 1 else 1 %}
+        {% set right = page + delta if page + delta < pages else pages %}
 
-            {% if page < pages %}
-            <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}">Наступна</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+        {% if left > 1 %}
+        <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+        {% if left > 2 %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% endif %}
+        {% endif %}
+
+        {% for p in range(left, right + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+
+        {% if right < pages %}
+        {% if right < pages - 1 %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% endif %}
+        <li class="page-item"><a class="page-link" href="?page={{ pages }}">{{ pages }}</a></li>
+        {% endif %}
+
+        {% if page < pages %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page + 1 }}" rel="next">Наступна</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+
+
+
+
+
+

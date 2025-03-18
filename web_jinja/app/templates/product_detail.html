@@ -1,0 +1,51 @@
+{% extends "components/base.html" %}
+
+{% block content %}
+
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Головне зображення -->
+        <div class="col-md-6">
+            <img src="{{imagePrefix}}{{ product.mainImage }}" class="img-fluid rounded shadow"
+                 alt="{{ product.title }}">
+
+
+            <div id="carouselExampleFade" class="carousel slide carousel-fade mt-5">
+                <div class="carousel-inner">
+                    {% for img in product.images %}
+                    <div class="carousel-item active">
+                        <img src="{{imagePrefix}}{{ img }}" class="d-block w-100" alt="...">
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade"
+                        data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade"
+                        data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+
+
+        </div>
+
+        <!-- Інформація про товар -->
+        <div class="col-md-6">
+            <h1 class="display-6">{{ product.title }}</h1>
+            <p class="text-muted">Категорія: {{ product.categoryId }}</p>
+            <h3 class="text-success">${{ product.price }}</h3>
+
+            <button class="btn btn-primary btn-lg mt-3">
+                Купити зараз
+            </button>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

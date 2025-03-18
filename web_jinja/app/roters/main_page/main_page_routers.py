@@ -22,29 +22,21 @@ async def index(request: Request, page: int = 1):
         "page": products_data["page"],
         "total": products_data["total"],
         "pages": products_data["pages"],
+        "imagePrefix": request.url_for("index"),
     }
 
-    response = templates.TemplateResponse(
-        "index.html",
-        context=context,
-    )
+    response = templates.TemplateResponse("index.html", context=context)
     return response
 
 
 @router.get("/product/{product_id}")
 async def product_detail(request: Request, product_id: int):
-    products_data = await call_main_api(URLS.ALL_PRODUCTS, params={"limit": 8})
-    print(products_data)
+    product = await call_main_api(URLS.ALL_PRODUCTS, params={}, path_id=product_id)
     context = {
         "request": request,
-        "products": products_data["items"],
-        "page": products_data["page"],
-        "total": products_data["total"],
-        "pages": products_data["pages"],
+        "product": product,
+        "imagePrefix": request.url_for("index"),
     }
 
-    response = templates.TemplateResponse(
-        "index.html",
-        context=context,
-    )
+    response = templates.TemplateResponse("product_detail.html", context=context)
     return response
