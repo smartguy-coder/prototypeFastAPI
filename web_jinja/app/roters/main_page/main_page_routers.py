@@ -10,10 +10,11 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/")
-async def index(request: Request, page: int = 1):
+@router.post("/")
+async def index(request: Request, page: int = 1, query: str = Form("")):
 
     products_data = await call_main_api(
-        URLS.ALL_PRODUCTS, params={"limit": 8, "page": page}
+        URLS.ALL_PRODUCTS, params={"limit": 8, "page": page, "q": query}
     )
 
     context = {
