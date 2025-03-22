@@ -61,7 +61,11 @@ class BaseCRUD(ABC):
         count_query = select(func.count()).select_from(self.model)
 
         if params.q and search_fields:
-            search_filter_condition = [search_field.icontains(params.q) for search_field in search_fields]
+            if params.use_sharp_filter:
+                clean_query = params.q.strip().lower()
+                search_filter_condition = [func.lower(search_field) == clean_query for search_field in search_fields]
+            else:
+                search_filter_condition = [search_field.icontains(params.q) for search_field in search_fields]
             query = query.filter(or_(*search_filter_condition))
             count_query = count_query.filter(or_(*search_filter_condition))
 
@@ -110,7 +114,7 @@ class BaseCRUD(ABC):
             )
         data_for_updating: dict = data_to_patch.model_dump(exclude={"id"}, exclude_unset=exclude_unset)
 
-        optimistic_offline_lock_version = getattr(item, "version")
+        optimistic_offline_lock_version = getattr(item, "version", None)
         if optimistic_offline_lock_version:
             if optimistic_offline_lock_version != getattr(data_to_patch, "version"):
                 raise HTTPException(

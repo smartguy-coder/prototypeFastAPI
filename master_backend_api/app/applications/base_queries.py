@@ -1,7 +1,7 @@
 from enum import IntEnum, StrEnum
 from typing import Annotated, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PaginationParams(IntEnum):
@@ -22,8 +22,11 @@ class SortFields(StrEnum):
 class SearchParams(BaseModel):
     q: Annotated[Optional[str], Field(default=None)] = None
     page: Annotated[int, Field(default=1, ge=1)]
-    limit: Annotated[
-        int, Field(default=10, le=PaginationParams.MAX_RESULTS_PER_PAGE.value, ge=1)
-    ]
+    limit: Annotated[int, Field(default=10, le=PaginationParams.MAX_RESULTS_PER_PAGE.value, ge=1)]
     order_direction: SortEnum = SortEnum.ASC
     sort_by: SortFields = SortFields.ID
+    use_sharp_filter: bool = Field(default=False, description="used to search exact q")
+
+    @field_validator("q")
+    def strip_q(cls, v):
+        return v.strip() if v else v

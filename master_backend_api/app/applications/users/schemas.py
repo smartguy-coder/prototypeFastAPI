@@ -1,12 +1,15 @@
 import re
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, model_validator, constr
 
 from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse
 
 
 class BaseFields(BaseModel):
     email: EmailStr = Field(description="User email", examples=["example@ukr.net"])
-    name: str = Field(description="Name of user", examples=["John Doe"], min_length=3, max_length=50)
+    name: constr(pattern=r"^[a-zA-Zа-яА-ЯїЇєЄіІґҐ'_ ]+$") = Field(
+        description="Name of user", examples=["John Doe"], min_length=3, max_length=50
+    )
+    # constr - only letters numbers and _
 
 
 class PasswordField(BaseModel):
