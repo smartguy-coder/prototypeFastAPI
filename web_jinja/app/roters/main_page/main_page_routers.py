@@ -8,6 +8,7 @@ from services.api import (
     call_main_api,
     login_and_get_user_with_tokens,
     force_logout_user,
+    call_main_api_create_user,
 )
 from services.api_constants import URLS
 
@@ -20,42 +21,6 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-class UserCreateForm:
-    def __init__(self, request: Request):
-        self.request: Request = request
-        self.errors: list = []
-        self.email: Optional[str] = None
-        self.name: Optional[str] = None
-        self.password: Optional[str] = None
-        self.password_confirm: Optional[str] = None
-        self.hashed_password: str = ""
-
-    async def load_data(self):
-        form = await self.request.form()
-        self.email = form.get("email")
-        self.name = form.get("name") or ""
-        self.password = form.get("password")
-        self.password_confirm = form.get("password_confirm")
-
-    async def is_valid(self):
-        if not self.email or "@" not in self.email:
-            self.errors.append("Please, enter valid email")
-
-        maybe_user = await dao.get_user_by_email(self.email, session)
-        if maybe_user:
-            self.errors.append("User with this email  already exists")
-
-        if not self.name or len(str(self.name)) < 3:
-            self.errors.append("Please? enter valid name")
-        if not self.password or len(str(self.password)) < 8:
-            self.errors.append("Please? enter password at least 8 symbols")
-        if self.password != self.password_confirm:
-            self.errors.append("Confirm password did not match!")
-        if not self.errors:
-            return True
-        return False
-
-
 @router.get("/")
 @router.post("/")
 async def index(
@@ -66,7 +31,7 @@ async def index(
 ):
 
     products_data = await call_main_api(
-        URLS.ALL_PRODUCTS, params={"limit": 8, "page": page, "q": query}
+        URLS.PRODUCTS, params={"limit": 8, "page": page, "q": query}
     )
 
     context = {
@@ -89,7 +54,7 @@ async def product_detail(
     product_id: int,
     user_and_tokens=Depends(get_current_user_with_tokens),
 ):
-    product = await call_main_api(URLS.ALL_PRODUCTS, params={}, path_id=product_id)
+    product = await call_main_api(URLS.PRODUCTS, params={}, path_id=product_id)
     context = {
         "request": request,
         "product": product,
@@ -147,33 +112,64 @@ async def register(
     if request.method == "GET":
         return templates.TemplateResponse("registration.html", context=context)
 
+    class UserCreateForm:
+        def __init__(self, request: Request):
+            self.request: Request = request
+            self.errors: list = []
+            self.email: Optional[str] = None
+            self.name: Optional[str] = None
+            self.password: Optional[str] = None
+            self.password_confirm: Optional[str] = None
+
+        async def load_data(self):
+            form = await self.request.form()
+            self.email = form.get("email") or ""
+            self.name = form.get("name") or ""
+            self.password = form.get("password") or ""
+            self.password_confirm = form.get("password_confirm") or ""
+
+        async def is_valid(self):
+            if not self.email or "@" not in self.email:
+                self.errors.append("Please, enter valid email")
+
+            users_found = await call_main_api(
+                URLS.USERS, params={"q": self.email, "use_sharp_filter": True}
+            )
+            if users_found.get("total", 0) > 0:
+                self.errors.append("User with this email  already exists")
+
+            if not self.name or len(str(self.name)) < 3:
+                self.errors.append("Please, enter valid name")
+            if not self.password or len(str(self.password)) < 8:
+                self.errors.append("Please, enter password at least 8 symbols")
+            if self.password != self.password_confirm:
+                self.errors.append("Confirm password did not match!")
+            if not self.errors:
+                return True
+            return False
+
     new_user_form = UserCreateForm(request)
     await new_user_form.load_data()
-    if await new_user_form.is_valid(session):
-        hashed_password = await PasswordEncrypt.get_password_hash(
-            new_user_form.password
+    if await new_user_form.is_valid():
+        user = await call_main_api_create_user(new_user_form)
+        if not user:
+            raise ValueError
+        response = RedirectResponse(
+            request.url_for("registered_success"), status_code=status.HTTP_303_SEE_OTHER
         )
-
-        saved_user = await dao.create_user(
-            name=new_user_form.name,
-            email=new_user_form.email,
-            hashed_password=hashed_password,
-            session=session,
-        )
-        background_tasks.add_task(
-            send_email_verification,
-            user_email=saved_user.email,
-            user_uuid=saved_user.user_uuid,
-            user_name=saved_user.name,
-            host=request.base_url,
-        )
-        redirect_url = request.url_for("index")
-        response = RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
-        return await SecurityHandler.set_cookies_web(saved_user, response)
+        return response
     else:
         return templates.TemplateResponse(
             "registration.html", context=new_user_form.__dict__
         )
+
+
+@router.get("/registered-success")
+async def registered_success(request: Request):
+    response = templates.TemplateResponse(
+        "user_registered_success.html", context={"request": request}
+    )
+    return response
 
 
 @router.get("/logout")
