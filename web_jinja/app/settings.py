@@ -18,7 +18,9 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_CACHE_PREFIX: str = "fastapi-cache"
 
-    UDS_BASE_URL: str = "http://master-backend-api:10000"
+    # todo move to env
+    BASE_URL: str = "http://master-backend-api:10000"
+    PUBLIC_URL: str = "https://a037-188-130-177-189.ngrok-free.app"  # ngrok
 
 
 @lru_cache()

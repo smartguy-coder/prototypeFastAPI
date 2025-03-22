@@ -37,7 +37,7 @@
             <!-- Кнопки логіну та реєстрації -->
       <div class="d-flex">
         {% if user %}
-          <button type="button" class="btn btn-light" data-bs-toggle="popover" data-bs-title="Additional info" data-bs-content="Created at: {{user.created_at}} <br>">USER: {{ user.name }}</button>
+          <button type="button" class="btn btn-light" data-bs-toggle="popover" data-bs-title="Additional info" data-bs-content="Created at: {{user.created_at}}">USER: {{ user.name }}</button>
           <a href="{{ url_for('logout') }}" class="btn btn-outline-primary me-2 ">Logout</a>
           <a href="{{ url_for('force_logout') }}" class="btn btn-outline-primary me-2 ">Force logout</a>
         {% else %}
