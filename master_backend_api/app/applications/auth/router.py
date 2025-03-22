@@ -33,7 +33,7 @@ async def user_login(
 
 @router_auth.post("/refresh")
 async def refresh_user_token(
-    refresh_token=Header(), session: AsyncSession = Depends(get_async_session)
+    refresh_token: str = Header(alias="X-Refresh-Token"), session: AsyncSession = Depends(get_async_session)
 ) -> LoginResponse:
     token_pair = await auth_handler.get_refresh_token(refresh_token, session=session)
     return token_pair
