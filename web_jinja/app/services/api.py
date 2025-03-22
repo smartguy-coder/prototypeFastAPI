@@ -32,10 +32,10 @@ async def get_user_by_access_token(access_token):
             response_user.raise_for_status()
         except httpx.HTTPStatusError as e:
             print(f"HTTP error: {e.response.status_code} - {e.response.text}")
-            return None
+            return {}
         except httpx.RequestError as e:
             print(f"Request failed: {e}")
-            return None
+            return {}
 
     user = response_user.json()
     return user
@@ -64,6 +64,23 @@ async def login_user(email, password):
             response = await client.post(
                 f"{settings.UDS_BASE_URL}/api/auth/login",
                 data={"username": email, "password": password},
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error: {e.response.status_code} - {e.response.text}")
+            return {}
+        except httpx.RequestError as e:
+            print(f"Request failed: {e}")
+            return {}
+    return response.json()
+
+
+async def force_logout_user(access_token):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{settings.UDS_BASE_URL}/api/auth/force-logout",
+                headers={"Authorization": f"Bearer {access_token}"},
             )
             response.raise_for_status()
         except httpx.HTTPStatusError as e:

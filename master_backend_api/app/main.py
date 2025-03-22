@@ -91,4 +91,4 @@ async def index():
     logging.warning("111111112222222222222")
     logging.error("111111112222222222222")
     await redis_service.set_cache("hjhjhjhjhh55555555555555551111111", 45)
-    return {"status": settings.DATABASE_URL}
+    return {"status": "OK"}

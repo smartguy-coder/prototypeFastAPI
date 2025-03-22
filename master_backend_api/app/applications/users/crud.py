@@ -27,6 +27,7 @@ class UserDBManager(BaseCRUD):
         is_admin: bool = False,
         notes: str = "",
     ) -> User:
+
         hashed_password = await PasswordEncrypt.get_password_hash(password)
         user = self.model(
             email=email,
