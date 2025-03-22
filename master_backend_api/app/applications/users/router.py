@@ -18,7 +18,7 @@ from applications.users.schemas import (
 from constants.messages import HelpTexts
 from constants.permissions import UserPermissionsEnum
 from dependencies.database import get_async_session
-from dependencies.security import require_permissions
+from dependencies.security import require_permissions, get_current_user
 from services.rabbit.constants import SupportedQueues
 from services.rabbit.rabbitmq_service import rabbitmq_producer
 
@@ -61,6 +61,11 @@ async def create_user(
 async def verify_user(user_uuid: uuid.UUID, session: AsyncSession = Depends(get_async_session)) -> StatusSuccess:
     await user_manager.activate_user_account(user_uuid, session)
     return StatusSuccess()
+
+
+@router_users.get("/me")
+async def get_me(user: User = Depends(get_current_user)) -> SavedUser:
+    return SavedUser.from_orm(user)
 
 
 @router_users.get("/{id}")

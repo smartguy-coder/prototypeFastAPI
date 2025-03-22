@@ -50,7 +50,7 @@ class PatchDetailedUser(BaseFields, IsActiveField):
 
 
 class SavedUser(PatchDetailedUser, BaseCreatedAtField, BaseIdField):
-    pass
+    is_admin: bool = False
 
 
 class PaginationSavedUserResponse(PaginationResponse):

@@ -31,8 +31,20 @@
 
       <form class="d-flex" role="search" method="post" action="{{ url_for('index') }}">
         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query" minlength="3">
-        <button class="btn btn-outline-success" type="submit">Search</button>
+        <button class="btn btn-outline-success me-2 " type="submit">Search</button>
       </form>
+
+            <!-- Кнопки логіну та реєстрації -->
+      <div class="d-flex">
+        {% if user %}
+          <button type="button" class="btn btn-light" data-bs-toggle="popover" data-bs-title="Additional info" data-bs-content="Created at: {{user.created_at}}">USER: {{ user.name }}</button>
+          <a href="{{ url_for('logout') }}" class="btn btn-outline-primary me-2 ">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-outline-primary me-2">Login</a>
+          <a href="{{ url_for('register') }}" class="btn btn-outline-primary me-2 ">Register</a>
+        {% endif %}
+      </div>
+
     </div>
   </div>
 </nav>

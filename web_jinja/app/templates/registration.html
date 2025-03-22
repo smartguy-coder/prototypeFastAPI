@@ -1,0 +1,57 @@
+{% extends 'components/base.html' %}
+
+{% block content %}
+
+<div class="container py-5">
+  <h2 class="mb-4">Register</h2>
+
+  {% if errors %}
+  <div class="alert alert-danger" role="alert">
+    <ul class="mb-0">
+      {% for error in errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="post" class="needs-validation" novalidate>
+    <!-- Name Input -->
+    <div class="mb-3">
+      <label for="nameId" class="form-label">Name</label>
+      <input type="text" name="name" class="form-control" id="nameId" required minlength="3" value="{{ name }}">
+      <div class="invalid-feedback">Name must be at least 3 characters long.</div>
+    </div>
+
+    <!-- Email Input -->
+    <div class="mb-3">
+      <label for="InputEmail" class="form-label">Email address</label>
+      <input type="email" name="email" class="form-control" id="InputEmail" aria-describedby="emailHelp" required value="{{ email }}">
+      <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+    </div>
+
+    <!-- Password Input -->
+    <div class="mb-3">
+      <label for="InputPassword" class="form-label">Password</label>
+      <input type="password" name="password" class="form-control" id="InputPassword" required minlength="8">
+      <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+    </div>
+
+    <!-- Password Confirmation Input -->
+    <div class="mb-3">
+      <label for="InputPasswordConfirm" class="form-label">Confirm Password</label>
+      <input type="password" name="password_confirm" class="form-control" id="InputPasswordConfirm" required minlength="8">
+      <div class="invalid-feedback">Please confirm your password.</div>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary w-100">Register</button>
+
+    <!-- Additional Links -->
+    <div class="text-center mt-3">
+      <a href="{{ url_for('login') }}" class="link-primary">Already have an account? Login here</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

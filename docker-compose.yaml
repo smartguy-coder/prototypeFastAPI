@@ -259,8 +259,6 @@ services:
       - '80:80'
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - master-backend-api
     networks:
       - main_network
 
