@@ -1,0 +1,76 @@
+{% extends 'components/base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Ваше замовлення</h2>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered text-center">
+            <thead>
+            <tr class="h5">
+                <th scope="col"></th>
+                <th scope="col" colspan="2" class="text-center">Товар</th>
+                <th scope="col">Кількість</th>
+                <th scope="col">Ціна</th>
+                <th scope="col">Вартість</th>
+            </tr>
+            </thead>
+
+
+            <tbody>
+            {% for product in cart.orderProducts %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <th scope="row" class="text-center"><img src="{{imagePrefix}}{{ product.product.mainImage }}"
+                                                         width="45"></th>
+                <th scope="row">{{ product.product.title }}</th>
+                <td>
+                    <!-- Кнопки в горизонтальній площині, вирівняні по центру -->
+                    <div class="d-flex justify-content-center align-items-center">
+                        <!-- Зменшення кількості (червона кнопка) -->
+                        <form method="post" action="#">
+                            <input type="hidden" name="product_id" value="{{product.product.id}}">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="bi bi-dash"></i> <!-- Іконка для зменшення -->
+                            </button>
+                        </form>
+
+                        <span class="mx-2">{{ product.quantity }}</span> <!-- Кількість товару -->
+
+                        <!-- Збільшення кількості (зелена кнопка) -->
+                        <form method="post" action="#">
+                            <input type="hidden" name="product_id" value="{{product.product.id}}">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-plus"></i> <!-- Іконка для збільшення -->
+                            </button>
+                        </form>
+                    </div>
+                </td>
+
+                <td class="text-center">{{ product.price|round(2) }}</td>
+                <td class="text-center">{{ product.total|round(2) }}</td>
+            </tr>
+            {% endfor %}
+
+
+            <tr>
+                <th colspan="5">Всього</th>
+                <th scope="row" class="text-center">{{cart.cost|round(2)}}</th>
+            </tr>
+
+
+            </tbody>
+        </table>
+
+
+        <!-- Кнопка оформлення замовлення -->
+        <div class="text-end mt-4">
+            <a href="#" class="btn btn-success btn-lg">Оплатити замовлення</a>
+        </div>
+
+
+    </div>
+
+
+    {% endblock %}

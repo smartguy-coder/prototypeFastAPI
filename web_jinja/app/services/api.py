@@ -4,12 +4,19 @@ from services.api_constants import URLS
 from settings import settings
 
 
-async def call_main_api(endpoint: URLS, params: dict, path_id="") -> dict:
+async def call_main_api(
+    endpoint: URLS, params: dict, path_id="", access_token=""
+) -> dict:
 
     async with httpx.AsyncClient() as client:
+        headers = {}
+        if access_token:
+            headers["Authorization"] = f"Bearer {access_token}"
         try:
             response = await client.get(
-                f"{settings.BASE_URL}/api/{endpoint}/{path_id}", params=params
+                f"{settings.BASE_URL}/api/{endpoint}/{path_id}",
+                params=params,
+                headers=headers,
             )
             print(response.status_code)
             response.raise_for_status()

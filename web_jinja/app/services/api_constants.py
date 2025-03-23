@@ -5,3 +5,4 @@ class URLS(StrEnum):
     CATEGORIES = "categories"
     PRODUCTS = "products"
     USERS = "users"
+    ORDERS = "orders"

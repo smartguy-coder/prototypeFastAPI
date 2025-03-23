@@ -242,3 +242,27 @@ async def add_product_to_cart(
 
     response = templates.TemplateResponse("index.html", context=context)
     return await SecurityHandler.set_cookies(user_and_tokens, response)
+
+
+@router.get("/cart")
+async def cart(request: Request, user_and_tokens=Depends(get_current_user_with_tokens)):
+    if not user_and_tokens:
+        response = RedirectResponse(
+            url=request.url_for("login"), status_code=status.HTTP_303_SEE_OTHER
+        )
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
+
+    cart_data = await call_main_api(
+        URLS.ORDERS, params={}, access_token=user_and_tokens["access_token"]
+    )
+
+    context = {
+        "request": request,
+        "cart": cart_data,
+        "imagePrefix": request.url_for("index"),
+        "user": user_and_tokens,
+    }
+    response = templates.TemplateResponse("cart.html", context=context)
+    return await SecurityHandler.set_cookies(user_and_tokens, response)
