@@ -147,3 +147,33 @@ async def add_product_to_cart_request(quantity, product_id, access_token):
             print(f"Request failed: {e}")
             return {}
     return response.json()
+
+
+async def change_product_quantity_request(product_id, action, access_token):
+    payload = {"quantity": 1, "product_id": product_id}
+
+    if action == "increase":
+        url = f"{settings.BASE_URL}/api/orders/addProduct"
+    elif action == "decrease":
+        url = f"{settings.BASE_URL}/api/orders/decreaseRemoveProduct"
+    elif action == "delete":
+        url = f"{settings.BASE_URL}/api/orders/decreaseRemoveProduct"
+        payload |= {"is_set_quantity": True, "quantity": 0}
+    else:
+        return
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.patch(
+                url=url,
+                headers={"Authorization": f"Bearer {access_token}"},
+                json=payload,
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error: {e.response.status_code} - {e.response.text}")
+            return {}
+        except httpx.RequestError as e:
+            print(f"Request failed: {e}")
+            return {}
+    return response.json()

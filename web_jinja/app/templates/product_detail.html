@@ -40,9 +40,7 @@
             <p class="text-muted">Категорія: {{ product.categoryId }}</p>
             <h3 class="text-success">${{ product.price }}</h3>
 
-            <button class="btn btn-primary btn-lg mt-3">
-                Купити зараз
-            </button>
+            {% include 'components/buy_product_btn.html' %}
         </div>
     </div>
 </div>

@@ -39,16 +39,24 @@ custom_requests_categories_total = Counter(
 
 @router_order.get("/")
 async def get_current_order(
-    user: User = Depends(get_current_user), session: AsyncSession = Depends(get_async_session)
+    user: User = Depends(get_current_user),
+    with_zero_products: bool = False,
+    session: AsyncSession = Depends(get_async_session),
 ) -> OrderSchema:
     order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
-    return order
+
+    if with_zero_products:
+        return order
+
+    response = OrderSchema.from_orm(order)
+    response.filter_zero_quantity_products()
+    return response
 
 
 @router_order.patch("/addProduct")
 async def add_product_to_order(
     order: Order = Depends(get_order),  # depends on user, so must be first
-    quantity: int = Body(ge=1, default=1),
+    quantity: int = Body(ge=0, default=1),
     is_set_quantity: bool = Body(default=False, description="Used to set precise quantity"),
     product: Product = Depends(get_product),
     session: AsyncSession = Depends(get_async_session),
@@ -65,7 +73,7 @@ async def add_product_to_order(
 @router_order.patch("/decreaseRemoveProduct")
 async def decrease_remove_product_from_order(
     order: Order = Depends(get_order),  # depends on user, so must be first
-    quantity: int = Body(gt=1, default=1),
+    quantity: int = Body(ge=0, default=1),
     is_set_quantity: bool = Body(default=False, description="Used to set precise quantity"),
     product: Product = Depends(get_product),
     session: AsyncSession = Depends(get_async_session),

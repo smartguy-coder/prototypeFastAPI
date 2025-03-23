@@ -75,3 +75,11 @@ class OrderSchema(BaseCreatedAtField):
         from_attributes = True
         alias_generator = to_camel
         populate_by_name = True
+
+    def filter_zero_quantity_products(self):
+        self.order_products = [item for item in self.order_products if item.quantity > 0]
+
+    def get_filtered_order(self):
+        self.filter_zero_quantity_products()
+        self.order_products.sort(key=lambda item: item.product.id)
+        return self
