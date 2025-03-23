@@ -10,6 +10,7 @@ from services.api import (
     force_logout_user,
     call_main_api_create_user,
     add_product_to_cart_request,
+    change_product_quantity_request,
 )
 from services.api_constants import URLS
 
@@ -197,11 +198,12 @@ async def force_logout(
     return response
 
 
+@router.get("/add-product-to-cart/")
 @router.post("/add-product-to-cart/")
 async def add_product_to_cart(
     request: Request,
-    product_id: int = Form(),
-    product_title: str = Form(),
+    product_id: int = Form(default=0),
+    product_title: str = Form(default=""),
     user_and_tokens=Depends(get_current_user_with_tokens),
 ):
     if not user_and_tokens:
@@ -211,10 +213,6 @@ async def add_product_to_cart(
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
         return response
-
-    await add_product_to_cart_request(
-        quantity=1, product_id=product_id, access_token=user_and_tokens["access_token"]
-    )
 
     # be sure open the same page
     query_params = dict(request.query_params)
@@ -235,12 +233,22 @@ async def add_product_to_cart(
         "pages": products_data["pages"],
         "imagePrefix": request.url_for("index"),
         "user": user_and_tokens,
-        # popup
-        "type": "success",
-        "message": f"Продукт {product_title} успішно добавлено в кошик",
     }
-
+    if product_title:
+        context |= {
+            # popup
+            "type": "success",
+            "message": f"Продукт {product_title} успішно добавлено в кошик",
+        }
     response = templates.TemplateResponse("index.html", context=context)
+
+    if request.method == "GET":
+        return await SecurityHandler.set_cookies(user_and_tokens, response)
+
+    await add_product_to_cart_request(
+        quantity=1, product_id=product_id, access_token=user_and_tokens["access_token"]
+    )
+
     return await SecurityHandler.set_cookies(user_and_tokens, response)
 
 
@@ -258,6 +266,38 @@ async def cart(request: Request, user_and_tokens=Depends(get_current_user_with_t
         URLS.ORDERS, params={}, access_token=user_and_tokens["access_token"]
     )
 
+    context = {
+        "request": request,
+        "cart": cart_data,
+        "imagePrefix": request.url_for("index"),
+        "user": user_and_tokens,
+    }
+    response = templates.TemplateResponse("cart.html", context=context)
+    return await SecurityHandler.set_cookies(user_and_tokens, response)
+
+
+@router.post("/quantity-product-change")
+async def quantity_product_change(
+    request: Request,
+    product_id: int = Form(),
+    action: str = Form(),
+    user_and_tokens=Depends(get_current_user_with_tokens),
+):
+    if not user_and_tokens:
+        response = RedirectResponse(
+            url=request.url_for("login"), status_code=status.HTTP_303_SEE_OTHER
+        )
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
+
+    await change_product_quantity_request(
+        product_id, action, user_and_tokens["access_token"]
+    )
+
+    cart_data = await call_main_api(
+        URLS.ORDERS, params={}, access_token=user_and_tokens["access_token"]
+    )
     context = {
         "request": request,
         "cart": cart_data,
