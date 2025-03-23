@@ -9,6 +9,7 @@ from services.api import (
     login_and_get_user_with_tokens,
     force_logout_user,
     call_main_api_create_user,
+    add_product_to_cart_request,
 )
 from services.api_constants import URLS
 
@@ -194,3 +195,50 @@ async def force_logout(
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     return response
+
+
+@router.post("/add-product-to-cart/")
+async def add_product_to_cart(
+    request: Request,
+    product_id: int = Form(),
+    product_title: str = Form(),
+    user_and_tokens=Depends(get_current_user_with_tokens),
+):
+    if not user_and_tokens:
+        response = RedirectResponse(
+            url=request.url_for("login"), status_code=status.HTTP_303_SEE_OTHER
+        )
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
+
+    await add_product_to_cart_request(
+        quantity=1, product_id=product_id, access_token=user_and_tokens["access_token"]
+    )
+
+    # be sure open the same page
+    query_params = dict(request.query_params)
+    products_data = await call_main_api(
+        URLS.PRODUCTS,
+        params={
+            "limit": 8,
+            "page": query_params.get("page") or 1,
+            "q": query_params.get("query") or "",
+        },
+    )
+
+    context = {
+        "request": request,
+        "products": products_data["items"],
+        "page": products_data["page"],
+        "total": products_data["total"],
+        "pages": products_data["pages"],
+        "imagePrefix": request.url_for("index"),
+        "user": user_and_tokens,
+        # popup
+        "type": "success",
+        "message": f"Продукт {product_title} успішно добавлено в кошик",
+    }
+
+    response = templates.TemplateResponse("index.html", context=context)
+    return await SecurityHandler.set_cookies(user_and_tokens, response)

@@ -15,10 +15,7 @@
                         <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-primary">
                             <i class="bi bi-eye"></i> Деталі
                         </a>
-                        <!-- Кнопка додавання в кошик -->
-                        <button class="btn btn-warning">
-                            <i class="bi bi-cart-plus"></i>
-                        </button>
+                        {% include 'components/buy_product_btn.html' %}
                     </div>
                 </div>
             </div>

@@ -48,7 +48,7 @@ async def get_current_order(
 @router_order.patch("/addProduct")
 async def add_product_to_order(
     order: Order = Depends(get_order),  # depends on user, so must be first
-    quantity: int = Body(gt=1, default=1),
+    quantity: int = Body(ge=1, default=1),
     is_set_quantity: bool = Body(default=False, description="Used to set precise quantity"),
     product: Product = Depends(get_product),
     session: AsyncSession = Depends(get_async_session),

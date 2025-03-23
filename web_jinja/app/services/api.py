@@ -122,3 +122,21 @@ async def login_and_get_user_with_tokens(email, password) -> dict:
     user |= tokens_response_json
 
     return user
+
+
+async def add_product_to_cart_request(quantity, product_id, access_token):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.patch(
+                f"{settings.BASE_URL}/api/orders/addProduct",
+                headers={"Authorization": f"Bearer {access_token}"},
+                json={"quantity": quantity, "product_id": product_id},
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error: {e.response.status_code} - {e.response.text}")
+            return {}
+        except httpx.RequestError as e:
+            print(f"Request failed: {e}")
+            return {}
+    return response.json()

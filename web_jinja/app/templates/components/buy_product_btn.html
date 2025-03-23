@@ -1,0 +1,12 @@
+{% if user %}
+
+
+<form method="post" action="{{ url_for('add_product_to_cart') }}">
+    <input type="number" name="product_id" value="{{product.id}}" hidden="">
+    <input type="text" name="product_title" value="{{product.title}}" hidden="">
+    <button class="btn btn-warning">
+        <i class="bi bi-cart-plus"></i>
+    </button>
+</form>
+
+{% endif %}
