@@ -691,6 +691,38 @@ uvicorn = {version = ">=0.15.0", extras = ["standard"]}
 standard = ["uvicorn[standard] (>=0.15.0)"]
 
 [[package]]
+name = "flagsmith"
+version = "3.8.0"
+description = "Flagsmith Python SDK"
+optional = false
+python-versions = "<4,>=3.8.1"
+files = [
+    {file = "flagsmith-3.8.0.tar.gz", hash = "sha256:0ed401d32978632e9ea156418f7e479bdae8bd879354164d667721ece972d878"},
+]
+
+[package.dependencies]
+flagsmith-flag-engine = ">=5.1.0,<6.0.0"
+pydantic = ">=2,<3"
+requests = ">=2.32.3,<3.0.0"
+requests-futures = ">=1.0.1,<2.0.0"
+sseclient-py = ">=1.8.0,<2.0.0"
+
+[[package]]
+name = "flagsmith-flag-engine"
+version = "5.3.0"
+description = "Flag engine for the Flagsmith API."
+optional = false
+python-versions = "*"
+files = [
+    {file = "flagsmith-flag-engine-5.3.0.tar.gz", hash = "sha256:87007f6a312cf11b2c201acd54b30f17de8aa039c3c56af431f1ed3c743fa84c"},
+]
+
+[package.dependencies]
+pydantic = ">=2.3.0,<3"
+pydantic-collections = ">=0.5.1,<1"
+semver = ">=3.0.1"
+
+[[package]]
 name = "flake8"
 version = "7.1.2"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -1706,6 +1738,21 @@ email = ["email-validator (>=2.0.0)"]
 timezone = ["tzdata"]
 
 [[package]]
+name = "pydantic-collections"
+version = "0.6.0"
+description = "Collections of pydantic models"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pydantic_collections-0.6.0-py3-none-any.whl", hash = "sha256:ec559722abf6a0f80e6f00b3d28f0f39c0ed5feb1641166230eb75e9da880162"},
+    {file = "pydantic_collections-0.6.0.tar.gz", hash = "sha256:c34d3fd1df5600b315cdecdd8e74eacd4c8c607b7e3f2c9392b2a15850a4ef9e"},
+]
+
+[package.dependencies]
+pydantic = ">=1.8.2,<3.0"
+typing-extensions = ">=4.7.1"
+
+[[package]]
 name = "pydantic-core"
 version = "2.27.2"
 description = "Core functionality for Pydantic validation and serialization"
@@ -2051,6 +2098,23 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "requests-futures"
+version = "1.0.2"
+description = "Asynchronous Python HTTP for Humans."
+optional = false
+python-versions = "*"
+files = [
+    {file = "requests_futures-1.0.2-py2.py3-none-any.whl", hash = "sha256:a3534af7c2bf670cd7aa730716e9e7d4386497554f87792be7514063b8912897"},
+    {file = "requests_futures-1.0.2.tar.gz", hash = "sha256:6b7eb57940336e800faebc3dab506360edec9478f7b22dc570858ad3aa7458da"},
+]
+
+[package.dependencies]
+requests = ">=1.2.0"
+
+[package.extras]
+dev = ["Werkzeug (>=3.0.6)", "black (>=24.3.0,<25.0.0)", "build (>=0.7.0)", "docutils (<=0.20.1)", "greenlet (<=2.0.2)", "greenlet (>=3.0.0)", "isort (>=5.11.4)", "pyflakes (>=2.2.0)", "pytest (>=6.2.5)", "pytest-cov (>=3.0.0)", "pytest-httpbin (>=2.0.0)", "readme-renderer[rst] (>=26.0)", "twine (>=3.4.2)"]
+
+[[package]]
 name = "rich"
 version = "13.9.4"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
@@ -2100,6 +2164,17 @@ botocore = ">=1.36.0,<2.0a.0"
 
 [package.extras]
 crt = ["botocore[crt] (>=1.36.0,<2.0a.0)"]
+
+[[package]]
+name = "semver"
+version = "3.0.4"
+description = "Python helper for Semantic Versioning (https://semver.org)"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "semver-3.0.4-py3-none-any.whl", hash = "sha256:9c824d87ba7f7ab4a1890799cec8596f15c1241cb473404ea1cb0c55e4b04746"},
+    {file = "semver-3.0.4.tar.gz", hash = "sha256:afc7d8c584a5ed0a11033af086e8af226a9c0b206f313e0301f8dd7b6b589602"},
+]
 
 [[package]]
 name = "sentry-sdk"
@@ -2279,6 +2354,17 @@ postgresql-psycopg2cffi = ["psycopg2cffi"]
 postgresql-psycopgbinary = ["psycopg[binary] (>=3.0.7)"]
 pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
+
+[[package]]
+name = "sseclient-py"
+version = "1.8.0"
+description = "SSE client for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sseclient-py-1.8.0.tar.gz", hash = "sha256:c547c5c1a7633230a38dc599a21a2dc638f9b5c297286b48b46b935c71fac3e8"},
+    {file = "sseclient_py-1.8.0-py2.py3-none-any.whl", hash = "sha256:4ecca6dc0b9f963f8384e9d7fd529bf93dd7d708144c4fb5da0e0a1a926fee83"},
+]
 
 [[package]]
 name = "starlette"
@@ -2797,4 +2883,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "d2f59f6d2fe271fcb247d88de4264df46ede4dacecd035f18eb2a8d89ae08e36"
+content-hash = "3dfa4a0b4cd4a0f54adf5215ecb19a154e16dbf2d033fc1f979c06dfa0f2f1ae"

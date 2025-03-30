@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str
 
     WORK_URL: str
+    FLAGSMITH_API_KEY: str = ""
 
     @property
     def DATABASE_URL(self) -> str:

@@ -68,11 +68,12 @@ class BaseCRUD(ABC):
                 # майже повнотекстовий пошук по частковому співпадіюю слів, введених не по порядку
                 # наприклад, для "Ноутбук Lenovo IdeaPad Slim 5 16IRL8" валідним буде запит "Ноутбук IdeaPad"
                 words = [word for word in params.q.strip().split() if len(word) > 1]
-                search_filter_condition = and_(
-                    *[and_(*(search_field.icontains(word) for word in words)) for search_field in search_fields]
+                search_filter_condition = or_(
+                    and_(*(search_field.icontains(word) for word in words)) for search_field in search_fields
                 )
-            query = query.filter(or_(*search_filter_condition))
-            count_query = count_query.filter(or_(*search_filter_condition))
+
+            query = query.filter(search_filter_condition)
+            count_query = count_query.filter(search_filter_condition)
 
         sort_field = getattr(self.model, params.sort_by, self.model.id)
 
