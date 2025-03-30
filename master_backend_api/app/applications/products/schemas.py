@@ -1,9 +1,9 @@
-from typing import Annotated, Optional
-
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse, InstanceVersion
+
 from utils.camel_case import to_camel
+from utils.images import ensure_full_url
 
 
 class NewCategory(BaseModel):
@@ -25,6 +25,7 @@ class PaginationSavedCategoriesResponse(PaginationResponse):
 
 class SavedProduct(BaseIdField):
     title: str
+    description: str
     price: float
     category_id: int
     images: list[str]
@@ -34,6 +35,14 @@ class SavedProduct(BaseIdField):
         from_attributes = True
         alias_generator = to_camel
         populate_by_name = True
+
+    @field_validator("images", "main_image", mode="before")
+    @classmethod
+    def validate_images(cls, value):
+
+        if isinstance(value, list):
+            return [ensure_full_url(img) for img in value]
+        return ensure_full_url(value)
 
 
 class PaginationSavedProductsResponse(PaginationResponse):
@@ -46,6 +55,7 @@ class ProductSchema(BaseModel):
     price: float = Field(..., alias="currentPrice")
     main_image: str
     images: list[str]
+    description: str = ""
 
     class Config:
         from_attributes = True

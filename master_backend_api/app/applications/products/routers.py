@@ -1,5 +1,6 @@
 import uuid
 from typing import Annotated
+from enum import StrEnum
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,6 +38,12 @@ custom_requests_categories_total = Counter(
 )
 
 
+class ModeChangeOrderProductQuantityEnum(StrEnum):
+    INCREASE = "increase"
+    DECREASE = "decrease"
+    SET = "set"
+
+
 @router_order.get("/")
 async def get_current_order(
     user: User = Depends(get_current_user),
@@ -53,34 +60,20 @@ async def get_current_order(
     return response
 
 
-@router_order.patch("/addProduct")
-async def add_product_to_order(
+@router_order.patch("/change-order-product-quantity")
+async def change_order_product_quantity(
     order: Order = Depends(get_order),  # depends on user, so must be first
     quantity: int = Body(ge=0, default=1),
-    is_set_quantity: bool = Body(default=False, description="Used to set precise quantity"),
+    mode: ModeChangeOrderProductQuantityEnum = Body(default=ModeChangeOrderProductQuantityEnum.INCREASE.value),
     product: Product = Depends(get_product),
     session: AsyncSession = Depends(get_async_session),
 ) -> OrderSchema:
-    """Add product to order. If product already in order - we will increase it quantity. Always applies current price"""
+    if mode == ModeChangeOrderProductQuantityEnum.DECREASE and mode != ModeChangeOrderProductQuantityEnum.SET:
+        quantity = -quantity
+    is_set_quantity = mode == ModeChangeOrderProductQuantityEnum.SET.value
+
     await order_product_manager.change_quantity_and_set_current_price(
         product=product, order_id=order.id, quantity=quantity, is_set_quantity=is_set_quantity, session=session
-    )
-    order_with_products: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
-
-    return order_with_products
-
-
-@router_order.patch("/decreaseRemoveProduct")
-async def decrease_remove_product_from_order(
-    order: Order = Depends(get_order),  # depends on user, so must be first
-    quantity: int = Body(ge=0, default=1),
-    is_set_quantity: bool = Body(default=False, description="Used to set precise quantity"),
-    product: Product = Depends(get_product),
-    session: AsyncSession = Depends(get_async_session),
-) -> OrderSchema:
-    decrease_quantity = quantity * -1
-    await order_product_manager.change_quantity_and_set_current_price(
-        product=product, order_id=order.id, quantity=decrease_quantity, is_set_quantity=is_set_quantity, session=session
     )
     order_with_products: Order = await order_manager.get_order_with_product(order_id=order.id, session=session)
 
@@ -185,6 +178,7 @@ async def delete_category(
 async def create_product(
     # cannot use pydantic model in multipart/form-data with UploadFile in body (just in query, but here - post request)
     title: str = Body(min_length=3, max_length=256),
+    description: str = Body(min_length=20, max_length=2**10),
     price: float = Body(ge=0.01),
     categoryId: int = Body(gt=0),
     main_image: UploadFile = Depends(validate_image),
@@ -221,6 +215,7 @@ async def create_product(
 
     created_product = await product_manager.create_instance(
         title=title.strip(),
+        description=description.strip(),
         price=price,
         images=images_urls,
         main_image=main_image_url,

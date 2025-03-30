@@ -20,7 +20,9 @@ class Settings(BaseSettings):
 
     # todo move to env
     BASE_URL: str = "http://master-backend-api:10000"
-    PUBLIC_URL: str = "https://a037-188-130-177-189.ngrok-free.app"  # ngrok
+    WORK_URL: str = "http://127.0.0.1"
+
+    STRIPE_SECRET_KEY: str
 
 
 @lru_cache()

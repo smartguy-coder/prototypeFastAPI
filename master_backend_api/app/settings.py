@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     RABBITMQ_DEFAULT_PASS: str
     RABBITMQ_AMQP_PORT: int
 
+    STRIPE_SECRET_KEY: str
+
+    WORK_URL: str
+
     @property
     def DATABASE_URL(self) -> str:
         return (

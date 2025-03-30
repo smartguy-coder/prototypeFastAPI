@@ -5,7 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from settings import settings
-from roters.main_page.main_page_routers import router as main_page_products_router
+from routers.main_page_routers import router as main_page_products_router
+from routers.payment_routers import router as payment_routers
 
 
 @asynccontextmanager
@@ -34,6 +35,7 @@ def get_application() -> FastAPI:
     _app.mount("/static", StaticFiles(directory="static"), name="static")
 
     _app.include_router(main_page_products_router, tags=["Main page"])
+    _app.include_router(payment_routers, prefix="/payment", tags=["Main page"])
 
     return _app
 

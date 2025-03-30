@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from fastapi import HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import asc, delete, desc, func, or_, select, update, exists
+from sqlalchemy import asc, delete, desc, func, or_, select, update, exists, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import InstrumentedAttribute
@@ -56,7 +56,7 @@ class BaseCRUD(ABC):
         targeted_schema: type[BaseModel],
         search_fields: list[InstrumentedAttribute] = None,
     ) -> PaginationResponse:
-        order_direction = desc if params.order_direction == SortEnum.DESC else asc
+        order_direction = asc if params.order_direction == SortEnum.ASC else desc
         query = select(self.model)
         count_query = select(func.count()).select_from(self.model)
 
@@ -65,13 +65,18 @@ class BaseCRUD(ABC):
                 clean_query = params.q.strip().lower()
                 search_filter_condition = [func.lower(search_field) == clean_query for search_field in search_fields]
             else:
-                search_filter_condition = [search_field.icontains(params.q) for search_field in search_fields]
+                # майже повнотекстовий пошук по частковому співпадіюю слів, введених не по порядку
+                # наприклад, для "Ноутбук Lenovo IdeaPad Slim 5 16IRL8" валідним буде запит "Ноутбук IdeaPad"
+                words = [word for word in params.q.strip().split() if len(word) > 1]
+                search_filter_condition = and_(
+                    *[and_(*(search_field.icontains(word) for word in words)) for search_field in search_fields]
+                )
             query = query.filter(or_(*search_filter_condition))
             count_query = count_query.filter(or_(*search_filter_condition))
 
-        sort_field = getattr(self.model, params.sort_by, None)
-        if sort_field is not None:
-            query = query.order_by(order_direction(sort_field))
+        sort_field = getattr(self.model, params.sort_by, self.model.id)
+
+        query = query.order_by(order_direction(sort_field))
 
         offset = (params.page - 1) * params.limit
         query = query.offset(offset).limit(params.limit)

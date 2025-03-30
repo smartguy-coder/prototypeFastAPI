@@ -23,6 +23,7 @@ class Product(PKMixin, CreateUpdateAtMixin, UUIDMixin, Base):
 
     title: Mapped[str] = mapped_column(String, nullable=False)
     price: Mapped[float] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(default="")
     images: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
     main_image: Mapped[str] = mapped_column(nullable=False)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="RESTRICT"), nullable=False)
