@@ -6,3 +6,10 @@ class URLS(StrEnum):
     PRODUCTS = "products"
     USERS = "users"
     ORDERS = "orders"
+    PAYMENT_HOOKS = "payment-hooks"
+
+
+class ModeChangeOrderProductQuantityEnum(StrEnum):
+    INCREASE = "increase"
+    DECREASE = "decrease"
+    SET = "set"

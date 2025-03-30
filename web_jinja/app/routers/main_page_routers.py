@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Request, Form, status, Depends, Response
+from fastapi import APIRouter, Request, Form, status, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 
@@ -12,7 +12,7 @@ from services.api import (
     add_product_to_cart_request,
     change_product_quantity_request,
 )
-from services.api_constants import URLS
+from services.api_constants import URLS, ModeChangeOrderProductQuantityEnum
 
 from services.security import SecurityHandler
 
@@ -42,7 +42,6 @@ async def index(
         "page": products_data["page"],
         "total": products_data["total"],
         "pages": products_data["pages"],
-        "imagePrefix": request.url_for("index"),
         "user": user_and_tokens,
     }
 
@@ -60,7 +59,6 @@ async def product_detail(
     context = {
         "request": request,
         "product": product,
-        "imagePrefix": request.url_for("index"),
         "user": user_and_tokens,
     }
 
@@ -231,7 +229,6 @@ async def add_product_to_cart(
         "page": products_data["page"],
         "total": products_data["total"],
         "pages": products_data["pages"],
-        "imagePrefix": request.url_for("index"),
         "user": user_and_tokens,
     }
     if product_title:
@@ -269,7 +266,6 @@ async def cart(request: Request, user_and_tokens=Depends(get_current_user_with_t
     context = {
         "request": request,
         "cart": cart_data,
-        "imagePrefix": request.url_for("index"),
         "user": user_and_tokens,
     }
     response = templates.TemplateResponse("cart.html", context=context)
@@ -280,7 +276,7 @@ async def cart(request: Request, user_and_tokens=Depends(get_current_user_with_t
 async def quantity_product_change(
     request: Request,
     product_id: int = Form(),
-    action: str = Form(),
+    mode: ModeChangeOrderProductQuantityEnum = Form(),
     user_and_tokens=Depends(get_current_user_with_tokens),
 ):
     if not user_and_tokens:
@@ -292,7 +288,7 @@ async def quantity_product_change(
         return response
 
     await change_product_quantity_request(
-        product_id, action, user_and_tokens["access_token"]
+        product_id, mode, user_and_tokens["access_token"]
     )
 
     cart_data = await call_main_api(
@@ -301,7 +297,6 @@ async def quantity_product_change(
     context = {
         "request": request,
         "cart": cart_data,
-        "imagePrefix": request.url_for("index"),
         "user": user_and_tokens,
     }
     response = templates.TemplateResponse("cart.html", context=context)

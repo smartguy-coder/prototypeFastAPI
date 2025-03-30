@@ -1,6 +1,6 @@
 import httpx
 
-from services.api_constants import URLS
+from services.api_constants import URLS, ModeChangeOrderProductQuantityEnum
 from settings import settings
 
 
@@ -32,8 +32,9 @@ async def call_main_api_create_user(form_obj) -> dict:
 
     async with httpx.AsyncClient() as client:
         try:
+            # to get working links in email
             response = await client.post(
-                f"{settings.PUBLIC_URL}/api/{URLS.USERS}/create",
+                f"{settings.WORK_URL}/api/{URLS.USERS}/create",
                 json={
                     "name": form_obj.name,
                     "email": form_obj.email,
@@ -135,9 +136,13 @@ async def add_product_to_cart_request(quantity, product_id, access_token):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.patch(
-                f"{settings.BASE_URL}/api/orders/addProduct",
+                f"{settings.BASE_URL}/api/orders/change-order-product-quantity",
                 headers={"Authorization": f"Bearer {access_token}"},
-                json={"quantity": quantity, "product_id": product_id},
+                json={
+                    "quantity": quantity,
+                    "product_id": product_id,
+                    "mode": ModeChangeOrderProductQuantityEnum.INCREASE,
+                },
             )
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
@@ -149,18 +154,11 @@ async def add_product_to_cart_request(quantity, product_id, access_token):
     return response.json()
 
 
-async def change_product_quantity_request(product_id, action, access_token):
-    payload = {"quantity": 1, "product_id": product_id}
+async def change_product_quantity_request(product_id, mode, access_token):
+    quantity = 0 if mode == ModeChangeOrderProductQuantityEnum.SET else 1
+    payload = {"quantity": quantity, "product_id": product_id, "mode": mode}
 
-    if action == "increase":
-        url = f"{settings.BASE_URL}/api/orders/addProduct"
-    elif action == "decrease":
-        url = f"{settings.BASE_URL}/api/orders/decreaseRemoveProduct"
-    elif action == "delete":
-        url = f"{settings.BASE_URL}/api/orders/decreaseRemoveProduct"
-        payload |= {"is_set_quantity": True, "quantity": 0}
-    else:
-        return
+    url = f"{settings.BASE_URL}/api/orders/change-order-product-quantity"
 
     async with httpx.AsyncClient() as client:
         try:

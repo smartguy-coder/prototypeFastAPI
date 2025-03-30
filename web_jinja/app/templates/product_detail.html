@@ -7,7 +7,7 @@
     <div class="row">
         <!-- Головне зображення -->
         <div class="col-md-6">
-            <img src="{{imagePrefix}}{{ product.mainImage }}" class="img-fluid rounded shadow"
+            <img src="{{ product.mainImage }}" class="img-fluid rounded shadow"
                  alt="{{ product.title }}">
 
 
@@ -15,7 +15,7 @@
                 <div class="carousel-inner">
                     {% for img in product.images %}
                     <div class="carousel-item active">
-                        <img src="{{imagePrefix}}{{ img }}" class="d-block w-100" alt="...">
+                        <img src="{{ img }}" class="d-block w-100" alt="...">
                     </div>
                     {% endfor %}
                 </div>

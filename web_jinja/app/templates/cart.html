@@ -23,7 +23,7 @@
             {% for product in cart.orderProducts %}
             <tr>
                 <th scope="row">{{ loop.index }}</th>
-                <th scope="row" class="text-center"><img src="{{imagePrefix}}{{ product.product.mainImage }}"
+                <th scope="row" class="text-center"><img src="{{ product.product.mainImage }}"
                                                          width="45"></th>
                 <th scope="row"><a href="{{ url_for('product_detail', product_id=product.product.id) }}"> {{
                     product.product.title }}
@@ -34,7 +34,7 @@
                         <!-- Зменшення кількості (червона кнопка) -->
                         <form method="post" action="{{ url_for('quantity_product_change') }}">
                             <input type="hidden" name="product_id" value="{{product.product.id}}">
-                            <input type="hidden" name="action" value="decrease">
+                            <input type="hidden" name="mode" value="decrease">
                             <button type="submit" class="btn btn-warning btn-sm">
                                 <i class="bi bi-dash"></i> <!-- Іконка для зменшення -->
                             </button>
@@ -45,7 +45,7 @@
                         <!-- Збільшення кількості (зелена кнопка) -->
                         <form method="post" action="{{ url_for('quantity_product_change') }}">
                             <input type="hidden" name="product_id" value="{{product.product.id}}">
-                            <input type="hidden" name="action" value="increase">
+                            <input type="hidden" name="mode" value="increase">
                             <button type="submit" class="btn btn-success btn-sm">
                                 <i class="bi bi-plus"></i> <!-- Іконка для збільшення -->
                             </button>
@@ -54,7 +54,7 @@
                         <!-- Кнопка для видалення товару -->
                         <form method="post" action="{{ url_for('quantity_product_change') }}" class="mx-2">
                             <input type="hidden" name="product_id" value="{{product.product.id}}">
-                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="mode" value="set">
                             <button type="submit" class="btn btn-danger btn-sm">
                                 <i class="bi bi-trash"></i> <!-- Іконка для видалення -->
                             </button>
@@ -80,7 +80,7 @@
 
         <!-- Кнопка оформлення замовлення -->
         <div class="text-end mt-4">
-            <a href="#" class="btn btn-success btn-lg">Оплатити замовлення</a>
+            <a href="{{ url_for('create_payment') }}" class="btn btn-success btn-lg">Оплатити замовлення</a>
         </div>
 
 

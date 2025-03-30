@@ -23,7 +23,7 @@ class SearchParams(BaseModel):
     q: Annotated[Optional[str], Field(default=None)] = None
     page: Annotated[int, Field(default=1, ge=1)]
     limit: Annotated[int, Field(default=10, le=PaginationParams.MAX_RESULTS_PER_PAGE.value, ge=1)]
-    order_direction: SortEnum = SortEnum.ASC
+    order_direction: SortEnum = SortEnum.DESC
     sort_by: SortFields = SortFields.ID
     use_sharp_filter: bool = Field(default=False, description="used to search exact q")
 

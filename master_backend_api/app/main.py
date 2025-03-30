@@ -8,6 +8,7 @@ from applications.admin.admin_handler import add_sqladmin_interface
 from applications.auth.router import router_auth
 from applications.products.routers import router_categories, router_products, router_order
 from applications.users.router import router_users
+from applications.payment.routers import router as payment_router
 from services.redis_service import redis_service
 from settings import settings
 import sentry_sdk
@@ -74,6 +75,8 @@ def get_application() -> FastAPI:
     _app.include_router(router_products, prefix="/products", tags=["Products"])
     _app.include_router(router_categories, prefix="/categories", tags=["Products"])
     _app.include_router(router_order, prefix="/orders", tags=["Orders"])
+    _app.include_router(payment_router, prefix="/payment-hooks", tags=["Payment"])
+    # _app.include_router(payment_router, prefix="/payment-hooks", tags=["Payment"], include_in_schema=False)
 
     add_sqladmin_interface(_app)
 

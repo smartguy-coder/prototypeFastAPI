@@ -61,9 +61,10 @@ class ProductAdmin(ModelView, model=Product):
         "category": "Категорія",
         "images": "Зображення",
         "main_image": "Головне зображення",
+        "description": "Опис",
     }
     name = "Продукт"
     name_plural = "Продукти"
-    form_columns = ["title", "price", "category"]
+    form_columns = ["title", "price", "category", "description"]
     category = "products"
     icon = "fa-solid fa-box"
