@@ -24,6 +24,7 @@ sqladmin = {extras = ["full"], version = "^0.20.1"}
 prometheus-fastapi-instrumentator = "^7.0.2"
 elasticsearch = {extras = ["async"], version = "^8.17.2"}
 stripe = "^11.6.0"
+flagsmith = "^3.8.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"

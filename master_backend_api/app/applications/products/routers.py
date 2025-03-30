@@ -26,6 +26,7 @@ from dependencies.file_storage import validate_image, validate_images
 from dependencies.order import get_order
 from dependencies.product import get_product
 from dependencies.security import require_permissions, get_current_user
+from features_flags.feature_flags import FeatureFlags
 from storage.s3 import s3_storage
 from prometheus_client import Counter
 
@@ -230,10 +231,14 @@ async def get_products(
     params: Annotated[SearchParams, Depends()],
     session: AsyncSession = Depends(get_async_session),
 ) -> PaginationSavedProductsResponse:
+    if FeatureFlags().should_search_in_description:
+        search_fields = [Product.title, Product.description]
+    else:
+        search_fields = [Product.title]
 
     result = await product_manager.get_items_paginated(
         params=params,
-        search_fields=[Product.title, Product.description],
+        search_fields=search_fields,
         targeted_schema=SavedProduct,
         session=session,
     )
