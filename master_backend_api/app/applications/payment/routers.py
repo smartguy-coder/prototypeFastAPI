@@ -3,9 +3,11 @@ from fastapi import APIRouter
 from pydantic import AnyUrl
 
 from applications.payment.constants import CurrencyEnum
-from applications.payment.schemas import StripePaymentUrl
+from applications.payment.schemas import StripePaymentUrl, SetOrderToClosedSchema
 from applications.products.crud import order_manager
+from applications.products.models import Order
 from applications.products.schemas import OrderSchema
+from applications.users.crud import user_manager
 from applications.users.models import User
 from dependencies.database import get_async_session
 from fastapi import APIRouter, Depends, Header, HTTPException, status, Request
@@ -65,7 +67,8 @@ async def proceed_payment_stripe(
     data: dict,
     session: AsyncSession = Depends(get_async_session),
 ):
-    pass
+    if not data:
+        return
     # n = {
     #     "id": "evt_1PfmSbRvJkC5nYiuZcj7BJaL",
     #     "object": "event",
@@ -167,11 +170,17 @@ async def proceed_payment_stripe(
         raise HTTPException(detail="NOT STRIPE DATA", status_code=status.HTTP_400_BAD_REQUEST)
     print(event)
     if event["type"] == "checkout.session.completed":
-        print(999999999999)
-    #     user_uuid = event["data"]["object"]["metadata"]["user_uuid"]
-    #     user = dao.get_user_by_uuid(UUID(user_uuid))
-    #     order: Order = dao.get_or_create(Order, user_id=user.id, is_closed=False)
-    #     # todo check sums
-    #     order.is_closed = True
-    #     session.add(order)
-    #     session.commit()
+        user_uuid = event["data"]["object"]["metadata"]["user_uuid"]
+        user = await user_manager.get_item(field=User.uuid_data, field_value=user_uuid, session=session)
+        if not user:
+            raise HTTPException(detail="No users found", status_code=status.HTTP_400_BAD_REQUEST)
+
+        order: Order = await order_manager.get_or_create(user_id=user.id, is_closed=False, session=session)
+        paid = data["data"]["object"]["amount_total"]
+        if int(float(order.cost)) != int(float(paid / 100)):
+            # for sentry log
+            raise ValueError(f"{order.id=}, {user.id=} => {paid/100=}{order.cost=}")
+        await order_manager.patch_item(
+            instance_id=order.id, session=session, data_to_patch=SetOrderToClosedSchema(), exclude_unset=False
+        )
+        return {"Order closed": True}

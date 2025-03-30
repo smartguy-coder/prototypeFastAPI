@@ -43,7 +43,7 @@ async def create_payment(user_and_tokens=Depends(get_current_user_with_tokens)):
 async def failed_payment(
     request: Request, user_and_tokens=Depends(get_current_user_with_tokens)
 ):
-    context = {"request": request, "title": "failed payment", "user": user_and_tokens}
+    context = {"request": request, "title": "success payment", "user": user_and_tokens}
     response = templates.TemplateResponse("success-payment.html", context=context)
     return await SecurityHandler.set_cookies(user_and_tokens, response)
 

@@ -37,8 +37,8 @@
         <!-- Інформація про товар -->
         <div class="col-md-6">
             <h1 class="display-6">{{ product.title }}</h1>
-            <p class="text-muted">Категорія: {{ product.categoryId }}</p>
-            <h3 class="text-success">${{ product.price }}</h3>
+            <p class="text-muted">Опис товару: {{ product.description }}</p>
+            <h3 class="text-success">{{ product.price }}грн.</h3>
 
             {% include 'components/buy_product_btn.html' %}
         </div>

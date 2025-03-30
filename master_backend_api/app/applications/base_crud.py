@@ -127,7 +127,7 @@ class BaseCRUD(ABC):
                     status_code=status.HTTP_409_CONFLICT,
                 )
             data_for_updating |= {"version": data_to_patch.version + 1}
-
+        print(data_for_updating, 999999999999999999999999999999999999999999999)
         query = update(self.model).where(self.model.id == instance_id).values(**data_for_updating)
         await session.execute(query)
         await session.commit()
