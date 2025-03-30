@@ -56,7 +56,7 @@ async def get_current_order(
         return order
 
     response = OrderSchema.from_orm(order)
-    response.filter_zero_quantity_products()
+    response.get_filtered_order()
     return response
 
 

@@ -1,12 +1,19 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Depends
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.templating import Jinja2Templates
 
 from settings import settings
 from routers.main_page_routers import router as main_page_products_router
 from routers.payment_routers import router as payment_routers
+from dependencies.user_dependencies import get_current_user_with_tokens
+
+
+templates = Jinja2Templates(directory="templates")
 
 
 @asynccontextmanager
@@ -41,3 +48,16 @@ def get_application() -> FastAPI:
 
 
 app = get_application()
+
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(
+    request: Request,
+    exc: StarletteHTTPException,
+    user_and_tokens=Depends(get_current_user_with_tokens),
+):
+    if exc.status_code == 404:
+        return templates.TemplateResponse(
+            "404.html", {"request": request, "user": user_and_tokens}, status_code=404
+        )
+    return HTMLResponse(content="Помилка", status_code=exc.status_code)
