@@ -76,7 +76,6 @@ def get_application() -> FastAPI:
     _app.include_router(router_categories, prefix="/categories", tags=["Products"])
     _app.include_router(router_order, prefix="/orders", tags=["Orders"])
     _app.include_router(payment_router, prefix="/payment-hooks", tags=["Payment"])
-    # _app.include_router(payment_router, prefix="/payment-hooks", tags=["Payment"], include_in_schema=False)
 
     add_sqladmin_interface(_app)
 
