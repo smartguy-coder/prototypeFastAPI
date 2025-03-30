@@ -16,13 +16,16 @@
         </li>
         {% endif %}
 
+
+
+ {% if user and user.is_admin %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Dropdown
+            Admin links
           </a>
           <ul class="dropdown-menu dropdown-menu-light">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
+            <li><a class="dropdown-item" href="/documentation">Documentation</a></li>
+            <li><a class="dropdown-item" href="/api/admin">Admin</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#">Something else here</a></li>
           </ul>
@@ -31,6 +34,8 @@
           <a class="nav-link disabled">Disabled</a>
         </li>
       </ul>
+          {% endif %}
+
       <button id="theme-toggle" class="btn btn-outline-secondary me-2">🌘</button>
 
       <form class="d-flex" role="search" method="post" action="{{ url_for('index') }}">

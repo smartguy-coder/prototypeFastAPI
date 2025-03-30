@@ -233,7 +233,7 @@ async def get_products(
 
     result = await product_manager.get_items_paginated(
         params=params,
-        search_fields=[Product.title],
+        search_fields=[Product.title, Product.description],
         targeted_schema=SavedProduct,
         session=session,
     )
