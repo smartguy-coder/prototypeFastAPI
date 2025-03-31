@@ -30,6 +30,8 @@ from features_flags.feature_flags import FeatureFlags
 from storage.s3 import s3_storage
 from prometheus_client import Counter
 
+from utils.images import sanitize_filename
+
 router_categories = APIRouter()
 router_products = APIRouter()
 router_order = APIRouter()
@@ -186,6 +188,10 @@ async def create_product(
     images: list[UploadFile] = Depends(validate_images),
     session: AsyncSession = Depends(get_async_session),
 ) -> SavedProduct:
+    main_image.filename = await sanitize_filename(main_image.filename)
+    for img in images:
+        img.filename = await sanitize_filename(img.filename)
+
     # base validation part
     category = await category_manager.get_item(field=Category.id, field_value=categoryId, session=session)
     if not category:
