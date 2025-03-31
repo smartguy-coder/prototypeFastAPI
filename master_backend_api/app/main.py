@@ -68,7 +68,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    _app.add_middleware(CustomMetricsMiddleware)
+    # _app.add_middleware(CustomMetricsMiddleware)
 
     _app.include_router(router_auth, prefix="/auth", tags=["Users", "Auth"])
     _app.include_router(router_users, prefix="/users", tags=["Users"])

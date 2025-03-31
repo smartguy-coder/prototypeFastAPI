@@ -26,8 +26,10 @@ class Settings(BaseSettings):
     S3_ACCESS_KEY: str
     S3_SECRET_KEY: str
     S3_DEFAULT_BUCKET_NAME: str
-    S3_PORT: int
+    S3_PORT: int = 9000
     S3_ENDPOINT: str
+    S3_REGION_NAME: str
+    S3_PUBLIC_BUCKET_URL: str
 
     DEFAULT_ADMIN_USER_EMAIL: EmailStr
     DEFAULT_ADMIN_USER_PASSWORD: str
