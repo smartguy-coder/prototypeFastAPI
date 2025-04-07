@@ -25,7 +25,6 @@ class S3Storage:
 
     async def upload_file(self, file: UploadFile, object_name: str) -> str:
         async for s3_client in self.get_s3_session():
-            file.file.seek(0)  # because of validate_image - it has read file
             try:
                 await s3_client.upload_fileobj(file, self.bucket_name, object_name)
                 return f"{settings.S3_PUBLIC_BUCKET_URL}/{object_name}"
