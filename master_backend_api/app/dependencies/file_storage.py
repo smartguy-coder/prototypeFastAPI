@@ -8,8 +8,7 @@ ALLOWED_IMAGE_FILE_TYPES = ["image/jpeg", "image/png", "image/gif"]
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 
 
-async def validate_image(mainImage: UploadFile = File(...)) -> File:
-
+async def validate_image(mainImage: UploadFile = File(...)) -> UploadFile:
     if mainImage.content_type not in ALLOWED_IMAGE_FILE_TYPES:
         raise HTTPException(
             status_code=400,
@@ -17,7 +16,11 @@ async def validate_image(mainImage: UploadFile = File(...)) -> File:
             f"Allowed types: {', '.join(ALLOWED_IMAGE_FILE_TYPES)}.",
         )
 
-    file_size = len(await mainImage.read())
+    # Отримуємо розмір файлу без його повного зчитування
+    mainImage.file.seek(0, 2)  # Переміщуємо курсор у кінець файлу
+    file_size = mainImage.file.tell()  # Отримуємо поточну позицію (розмір у байтах)
+    mainImage.file.seek(0)  # Повертаємо курсор на початок
+
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400,

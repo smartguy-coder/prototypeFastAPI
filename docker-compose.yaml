@@ -15,8 +15,8 @@ services:
     tty: true
     networks:
       - main_network
-    profiles:
-      - ui
+#    profiles:
+#      - ui
 
   master-backend-api:
     build:
@@ -40,7 +40,7 @@ services:
       sh -c "
         alembic upgrade head && \
     
-        uvicorn main:app --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log
+        uvicorn main:get_application --factory --port=10000 --host=0.0.0.0 --workers 1 --reload --no-access-log
       "
     #        uvicorn main:app --uds=/app/tmp_uds/master-backend.sock --workers 1 --reload --no-access-log &
     #
