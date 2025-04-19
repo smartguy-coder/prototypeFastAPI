@@ -20,3 +20,8 @@
     background-color: white !important;
     color: black !important;
 }
+
+  .fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }

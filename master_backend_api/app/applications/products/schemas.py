@@ -91,6 +91,5 @@ class OrderSchema(BaseCreatedAtField):
 
     def get_filtered_order(self):
         self.filter_zero_quantity_products()
-        print(self.order_products, 55555555555555555555555555555)
         self.order_products.sort(key=lambda item: item.product.id)
         return self

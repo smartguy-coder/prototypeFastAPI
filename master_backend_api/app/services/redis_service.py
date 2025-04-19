@@ -30,9 +30,7 @@ class RedisService:
         finally:
             await self.redis.close()
 
-    async def hset(
-        self, key: str, field: str, value: str, ttl: int = 60 * 60 * 24 * 90
-    ):
+    async def hset(self, key: str, field: str, value: str, ttl: int = 60 * 60 * 24 * 90):
         """
         Встановлює значення для певного поля в Redis хеші.
 
@@ -143,6 +141,40 @@ class RedisService:
         """
         async with self.get_redis() as redis:
             await redis.delete(key)
+
+    async def lpush(self, key: str, value: str, ttl: int | None = None):
+        """
+        Додає значення на початок списку та, за потреби, встановлює TTL на ключ.
+
+        Args:
+            key (str): Назва списку.
+            value (str): Значення для додавання.
+            ttl (int, optional): Час життя списку в секундах.
+        """
+        async with self.get_redis() as redis:
+            await redis.lpush(key, value)
+            if ttl is not None:
+                await redis.expire(key, ttl)
+
+    async def rpush(self, key: str, value: str):
+        """Додає значення в кінець списку."""
+        async with self.get_redis() as redis:
+            await redis.rpush(key, value)
+
+    async def lpop(self, key: str):
+        """Видаляє та повертає перший елемент списку."""
+        async with self.get_redis() as redis:
+            return await redis.lpop(key)
+
+    async def rpop(self, key: str):
+        """Видаляє та повертає останній елемент списку."""
+        async with self.get_redis() as redis:
+            return await redis.rpop(key)
+
+    async def lrange(self, key: str, start: int = 0, stop: int = -1):
+        """Отримує елементи списку з діапазону."""
+        async with self.get_redis() as redis:
+            return await redis.lrange(key, start, stop)
 
 
 redis_service = RedisService()

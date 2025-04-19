@@ -11,3 +11,12 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
             yield session
         finally:
             await session.close()
+
+
+async def get_async_session_instance() -> AsyncSession:
+    session_gen = get_async_session()
+    try:
+        session = await anext(session_gen)
+        return session
+    finally:
+        await session_gen.aclose()
