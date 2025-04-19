@@ -26,9 +26,6 @@ RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 COPY --chown=appuser:appgroup /app /app
 
-# Створюємо каталог tmp_uds під root, змінюємо власника та виставляємо права ДО перемикання на appuser
-RUN mkdir -p /app/tmp_uds && chown -R appuser:appgroup /app && chmod 777 /app/tmp_uds
-
 USER appuser
 
 EXPOSE 10000

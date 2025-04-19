@@ -21,14 +21,9 @@ RUN pip install --upgrade pip \
 COPY pyproject.toml poetry.lock /app/
 RUN poetry install --no-ansi --no-root --no-interaction
 
-# Створюємо директорію tmp_uds до переходу на appuser
-RUN mkdir -p /app/tmp_uds
-
 # Створюємо групу та користувача
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
-# Задаємо права директорії tmp_uds
-RUN chmod 777 /app/tmp_uds
 
 COPY /app /app
 
