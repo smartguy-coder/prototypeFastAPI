@@ -51,3 +51,20 @@ document.getElementById("test_messages").onclick = () => {
     console.log("my_messages:", response);
   });
 };
+
+socket.on("users_list", (data) => {
+  const rawUsers = data["users_list"]; // або ["Список користувачів"]
+
+  const users = Object.entries(rawUsers).map(([sid, userStr]) => ({
+    sid,
+    ...JSON.parse(userStr)
+  }));
+
+  console.log("Список користувачів:");
+  users.forEach(user => {
+    console.log(`SID: ${user.sid}, Name: ${user.name}, Email: ${user.email}`);
+  });
+});
+
+
+

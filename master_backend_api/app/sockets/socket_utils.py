@@ -1,3 +1,6 @@
+import json
+from typing import Union
+
 from applications.auth.auth_handler import AuthHandler
 from applications.users.crud import user_manager
 from dependencies.database import get_async_session_instance, get_async_session
@@ -18,6 +21,15 @@ async def get_user_from_data(user_data: dict):
         field=User.email, field_value=payload.get("email"), session=await get_async_session_instance()
     )
     return user
+
+
+async def store_users_data(sid: str, user: Union["User", dict]):
+    if isinstance(user, dict):
+        data = user
+    else:
+        data = {"id": user.id, "name": str(user.name), "email": str(user.email)}
+    key = "socketio:users"
+    await redis_service.hset(key=key, field=sid, value=json.dumps(data), ttl=60 * 60 * 24)
 
 
 async def set_user_data(sid: str, user: "User"):
