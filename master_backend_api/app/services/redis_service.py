@@ -50,6 +50,26 @@ class RedisService:
             await redis.hset(key, field, value)
             await redis.expire(key, ttl)
 
+    async def hdel(self, key: str, field: str):
+        """
+        Видаляє певне поле з Redis хешу.
+
+        Args:
+            key (str): Ключ хешу.
+            field (str): Назва поля, яке потрібно видалити.
+
+        Returns:
+            int: Кількість видалених полів (0 або 1).
+
+        Приклад використання:
+        ```python
+        async with redis_service.get_redis() as redis:
+            await redis_service.hdel('users:1234', 'name')
+        ```
+        """
+        async with self.get_redis() as redis:
+            await redis.hdel(key, field)
+
     async def hget(self, key: str, field: str):
         """
         Отримує значення для певного поля в Redis хеші.
