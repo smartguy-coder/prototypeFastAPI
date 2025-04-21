@@ -51,7 +51,6 @@ class SavedProduct(BaseIdField):
         #  for xss security
 
         if isinstance(v, str):
-            print(2222222222222222222222)
             return nh3.clean(v, tags=set())
         return v
 

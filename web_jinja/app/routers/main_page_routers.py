@@ -49,6 +49,19 @@ async def index(
     return await SecurityHandler.set_cookies(user_and_tokens, response)
 
 
+@router.get("/socket_messages")
+async def socket_messages(
+    request: Request,
+    user_and_tokens=Depends(get_current_user_with_tokens),
+):
+    context = {
+        "request": request,
+        "user": user_and_tokens,
+    }
+    response = templates.TemplateResponse("socket_messages.html", context=context)
+    return await SecurityHandler.set_cookies(user_and_tokens, response)
+
+
 @router.get("/product/{product_id}")
 async def product_detail(
     request: Request,

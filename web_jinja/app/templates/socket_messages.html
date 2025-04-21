@@ -1,0 +1,21 @@
+{% extends "components/base.html" %}
+
+{% block content %}
+{% if user %}
+{% include 'components/socket_panel.html' %}
+{% endif %}
+
+    <!--sockets-->
+<script>
+    {% if user %}
+const user = {{ user | tojson  }};
+
+{% else %}
+const user = {};
+{% endif %}
+
+</script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js" defer></script>
+<script src="{{ url_for('static', path='js/socket-client.js') }}" defer></script>
+
+{% endblock %}
