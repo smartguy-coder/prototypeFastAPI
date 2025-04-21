@@ -1,3 +1,4 @@
+import nh3
 from pydantic import BaseModel, Field, field_validator
 
 from applications.base_schemas import BaseCreatedAtField, BaseIdField, PaginationResponse, InstanceVersion
@@ -43,6 +44,16 @@ class SavedProduct(BaseIdField):
         if isinstance(value, list):
             return [ensure_full_url(img) for img in value]
         return ensure_full_url(value)
+
+    @field_validator("title", "description", mode="before")
+    @classmethod
+    def sanitize_html(cls, v):
+        #  for xss security
+
+        if isinstance(v, str):
+            print(2222222222222222222222)
+            return nh3.clean(v, tags=set())
+        return v
 
 
 class PaginationSavedProductsResponse(PaginationResponse):

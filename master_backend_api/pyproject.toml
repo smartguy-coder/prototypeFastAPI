@@ -28,6 +28,7 @@ flagsmith = "^3.8.0"
 aioboto3 = "^14.1.0"
 transliterate = "^1.10.2"
 python-socketio = "^5.13.0"
+nh3 = "^0.2.21"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"
